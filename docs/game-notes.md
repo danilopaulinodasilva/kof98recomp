@@ -33,9 +33,11 @@ Bringing it up as an AES found a toolkit bug: the AES has no board SFIX or SM1, 
 
 ## Widescreen
 
-`--widescreen` (or any `--width` over 320) patches the program at load time through `ng_game_t.patch`. Stage backgrounds are layers of 32 sprite columns, a 512-pixel ring. The game streams tiles into the columns near the camera and hides the rest by giving them zero height, and both ranges are sized for 320 pixels. The patch widens both by the margin on each side. The values are immediate operands, listed in `ng_game_t.live_words`, so the same recompiled build runs either way, and `--verify` checks both.
+`--widescreen` (or any `--width` over 320) patches the program at load time through `ng_game_t.patch`. Stage backgrounds are layers of 32 sprite columns, a 512-pixel ring. The game streams tiles into the columns near the camera and hides the rest by giving them zero height, and both ranges are sized for 320 pixels. Two routines draw layers, one with a height per column (railings, floors), and both carry the same visibility test. The patch widens the streaming window and the visibility tests by the margin on each side. The values are immediate operands, listed in `ng_game_t.live_words`, so the same recompiled build runs either way, and `--verify` checks both.
 
-- Fights use the full width. With the camera against either end of a stage, the floor runs out in the outer margin, and a fighter entering between rounds is visible a little earlier.
+- The game left the last column before the right edge hidden, behind the overscan mask, so the visible range gets 8 pixels of slack.
+- The streaming window (352 pixels plus both margins) has to fit the 512-pixel ring, so the patch stops at 80-pixel margins: wider output leaves the outermost pixels black.
+- Fights use the full width, including with the camera against either end of a stage. A fighter entering between rounds is visible a little earlier.
 - Menus, the character select and the win screens are fixed 320-pixel pictures; their margins stay black.
 - The 8-pixel black columns at the edges of the original picture come from the fix layer, which CRTs hid in the overscan. The runtime doesn't draw them when the output is wider than 320.
 
