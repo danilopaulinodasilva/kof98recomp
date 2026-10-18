@@ -64,6 +64,8 @@ if(KOF98_ROM_DIR)
         COMMAND kof98 --headless --rom-path ${KOF98_ROM_DIR} --frames 6000 --dump-misses ${KOF98_ENTRIES}
         COMMAND kof98 --headless --rom-path ${KOF98_ROM_DIR} --frames 19000
                 --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/play_long.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --widescreen --rom-path ${KOF98_ROM_DIR} --frames 19000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/play_long.txt --dump-misses ${KOF98_ENTRIES}
         DEPENDS kof98
         COMMENT "Profiling a scripted session for runtime-only entry points")
     target_compile_definitions(kof98 PRIVATE KOF98_HAVE_RECOMP)

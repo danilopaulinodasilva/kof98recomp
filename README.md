@@ -12,8 +12,9 @@ The toolkit does all the work; this repo describes the ROM set and builds the ga
 
 - Runs as an AES console with the Japanese AES system ROM (`neo-po.bin`): the AES cart refuses to run on an MVS board ([docs/game-notes.md](docs/game-notes.md)).
 - The 5 MB program is banked: the four 1 MB banks behind `$200000` are recompiled separately and dispatched by the bank that is mapped.
-- A 5-minute scripted soak runs natively after the profile pass, apart from a routine the game runs from work RAM at boot. `--verify` checks **12.1M** recompiled blocks against the Musashi interpreter with **0 mismatches**.
-- Not yet: sound, player 2 keys, gamepad support, widescreen, and a settings menu.
+- **Widescreen** (`--widescreen`, 400×224): fights draw the stage across the whole width. Menus and other screens keep their 320-pixel picture in the middle.
+- A 5-minute scripted soak runs natively after the profile pass, apart from a routine the game runs from work RAM at boot. `--verify` checks **12.1M** recompiled blocks (11.8M in widescreen) against the Musashi interpreter with **0 mismatches**.
+- Not yet: sound, player 2 keys, gamepad support, and a settings menu.
 
 ## Screenshots
 
@@ -25,6 +26,10 @@ All real output from the recompiled build (`--headless --screenshot`):
 | ![Title](docs/screenshots/title.png) | ![Mode select](docs/screenshots/mode.png) |
 | ![Team select](docs/screenshots/select.png) | ![Order select](docs/screenshots/order.png) |
 | ![Fight](docs/screenshots/fight.png) | |
+
+Widescreen (`--widescreen`):
+
+![Widescreen fight](docs/screenshots/fight-wide.png)
 
 ## Getting started
 
@@ -39,7 +44,7 @@ All real output from the recompiled build (`--headless --screenshot`):
 
 **On Linux or macOS**, run `./setup.sh` instead, optionally with `--rom-zip PATH --bios-zip PATH`. It does the same steps and offers the `apt` command for anything missing. When it finishes, run `./kof98.sh`.
 
-Keys: **arrows** move, **Z X C V** buttons A B C D, **1** start, **Esc** quit. It runs as an AES, so there are no coins: press start on the title screen. Start pauses during a round.
+Keys: **arrows** move, **Z X C V** buttons A B C D, **1** start, **Esc** quit. It runs as an AES, so there are no coins: press start on the title screen. Start pauses during a round. For widescreen, run `./kof98.sh --widescreen`.
 
 ### Step by step
 
@@ -87,6 +92,7 @@ Trip-ups:
 
 ```
 kof98 --rom-path roms                                      # play
+kof98 --rom-path roms --widescreen                         # play in 16:9
 kof98 --headless --frames 4400 --input tests/start_fight.txt --record run.mp4
 kof98 --headless --verify --frames 19000 --input tests/play_long.txt
 kof98 --headless --interp --frames 4400 --screenshot 4350:interp.png

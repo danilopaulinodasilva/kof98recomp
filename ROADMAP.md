@@ -2,7 +2,7 @@
 
 ## Next
 
-- **Widescreen**: draw the play field wider than 320 pixels.
+- **Widescreen polish**: decide what the outer margins show with the camera at the ends of a stage (the floor runs out there), and whether menus get side art.
 - **Sound**, once neogeorecomp has YM2610 synthesis. Nothing in this repo should need to change.
 - **Script more modes** (versus, survivor, practice, the boss fight) into the soak and the profile, so their runtime-only code runs natively and `--verify` covers them.
 - **Player 2 keys, gamepad input** and remappable keys (toolkit frontend).
