@@ -53,3 +53,6 @@ setup.log
 KOF98.cmd
 KOF98.lnk
 kof98.sh
+
+# macOS
+.DS_Store
