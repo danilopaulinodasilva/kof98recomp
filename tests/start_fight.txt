@@ -1,0 +1,21 @@
+# Start a 1P team game from the title loop (AES: no coin), confirm the
+# default team and order with A, and fight. Frame numbers are 59.19 Hz
+# video frames from power-on.
+2300 start
+2500 a
+2590 a
+2680 a
+2770 a
+2860 a
+2950 a
+3040 a
+3130 a
+3220 a
+3310 a
+3400 a
+# the first round is on by ~3900
+3900-3960 right
+4000 a
+4060 b
+4120 c
+4180 d

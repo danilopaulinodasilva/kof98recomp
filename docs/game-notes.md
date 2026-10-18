@@ -1,40 +1,45 @@
-# Metal Slug: notes
+# The King of Fighters '98: notes
 
 What this title needs from the toolkit, and what bringing it up showed. These notes cover behaviour only. Code addresses, disassembly and anything else lifted from the ROM are not published (REPO_RULES section 3).
 
 ## The set
 
-MAME set `mslug` (NGH-201), plus the `neogeo` system set.
+MAME set `kof98h` (NGH-2420, the AES cartridge), plus the AES system ROM from the `neogeo` set. The file names below are the ones in a non-merged `kof98h.zip`.
 
 | File | Size | CRC32 | Role |
 |---|---|---|---|
-| `201-p1.p1` | 2 MB | `08d8daa5` | 68000 program. The second MB is the fixed `$000000` bank and the first MB is the `$200000` bank; stored byte-swapped |
-| `201-s1.s1` | 128 KB | `2f55958d` | fix layer tiles |
-| `201-c1.c1`..`201-c4.c4` | 4 × 4 MB | `72813676` `96f62574` `5121456a` `f4ad59a3` | sprite tiles, two odd/even pairs |
-| `201-m1.m1` | 128 KB | `c28b3253` | Z80 sound driver |
-| `201-v1.v1`, `201-v2.v2` | 2 × 4 MB | `23d22ed1` `472cf9db` | ADPCM samples |
-| `sp-s2.sp1` | 128 KB | `9036d879` | MVS system ROM (Asia/Europe v2) |
-| `sfix.sfix`, `sm1.sm1`, `000-lo.lo` | | `c2ea0cfd` `94416d67` `5a86cff2` | BIOS fix tiles, BIOS sound driver, sprite shrink table |
+| `242-pn1.bin` | 1 MB | `61ac868a` | 68000 program, the fixed `$000000` area; stored byte-swapped |
+| `242-p2.bin` | 4 MB | `980aba4c` | 68000 program, four 1 MB banks for `$200000`; stored byte-swapped |
+| `242-s1.bin` | 128 KB | `7f7b4805` | fix layer tiles |
+| `242-c1.bin`..`242-c8.bin` | 8 × 8 MB | `e564ecd6` `bd959b60` `22127b4f` `0b4fa044` `9d10bed3` `da07b6a2` `f6d7a38a` `c823e045` | sprite tiles, four odd/even pairs |
+| `242-mg1.bin` | 256 KB | `4e7a6b1b` | Z80 sound driver |
+| `242-v1.bin`..`242-v4.bin` | 4 × 4 MB | `b9ea8051` `cc11106e` `044ea4e1` `7985ea30` | ADPCM samples |
+| `neo-po.bin` | 128 KB | `16d0c132` | AES system ROM (Japan) |
+| `sfix.sfix`, `sm1.sm1`, `000-lo.lo` | | `c2ea0cfd` `94416d67` `5a86cff2` | MVS fix tiles and sound driver (unused on an AES, but loaded), sprite shrink table |
 
-The board has no protection or encryption.
+The AES set has no encryption. The MVS set `kof98` does: its program is scrambled and the cartridge has a protection device, which the toolkit doesn't support.
+
+## Why it runs as an AES
+
+On an MVS board the AES cartridge plays one attract cycle and then stops at a "FOR USE WITH ORIGINAL SNK BOARDS ONLY" screen. When the game hands control back to an MVS system ROM, it leaves a flag in backup RAM; the next time the system ROM enters the game, it finds the flag and halts. So the game repo sets `.aes = 1` and `.bios = "neo-po.bin"`.
+
+Bringing it up as an AES found a toolkit bug: the AES has no board SFIX or SM1, so the fix layer and the Z80 always see the cartridge's S and M1 ROMs. The runtime used to switch to the board ROMs anyway, which left the screen full of the wrong fix tiles.
 
 ## What it exercises
 
-- **Boot through the real MVS BIOS**: RAM test, Z80 handshake (the BIOS switches from its own sound driver to the cartridge's), eyecatcher, coin and credit handling, and the attract loop with its demo.
-- **Sprites**: large objects such as the SV-001 and the title logo are many sprites wide, so they depend on sticky chains and the shrink tables being right.
-- **VBlank** drives the game loop through the BIOS.
+- **P ROM banking.** The program is 5 MB, with four 1 MB banks behind the `$200000` window. The game runs code from the banks, so the recompiler analyses each bank in its own context and the runtime picks a dispatch table by the bank that is mapped. References from the fixed area into the window are tried in every bank.
+- **64 MB of sprite tiles**, which needs tile numbers up to 19 bits.
+- **AES boot**: the AES system ROM, no coins or backup RAM.
 
 ## What discovery had to learn
 
-Most of Metal Slug's code is never the target of a direct call:
+- The pointer scan finds most code: about 39,900 routines from 38,600 pointer seeds.
+- The profile pass adds about 530 runtime-only entry points across attract and a play session.
+- At boot the game runs a routine from work RAM, which the static recompiler cannot see. It is about 11.7M interpreted instructions, all during start-up; after that the soak runs natively.
 
-- **State machines dispatch through pointer and offset tables.** Following static calls alone from the vectors found about 3,000 instructions; the jump-table pass took that into the tens of thousands.
-- **Objects run as coroutines.** A routine stores the address to resume at into the object's RAM with a PC-relative `lea`, and the object loop later jumps there. The code at those addresses is only ever referenced from data, which is why the recompiler scans the program for code pointers.
-- **One routine is an unrolled loop entered at a computed offset.** No static analysis can know the landing points, so they come from the profile pass (`--dump-misses`). One attract session plus one play session covers them.
-
-End state, with the profile pass: 453,545 instructions emitted across 15,195 routines and 33,613 dispatch entries. Both scripted sessions run with 0 interpreted instructions, and `--verify` finds 0 mismatches over 14.06M blocks.
+End state, with the profile pass: 1,571,070 instructions emitted across 40,451 routines and 57,596 dispatch entries. `--verify` finds 0 mismatches over 12.1M blocks of the soak.
 
 ## Not yet
 
-- **Sound**: the Z80 driver runs and answers the BIOS, but the YM2610 is silent (neogeorecomp ROADMAP).
-- **Later missions**: the soak script plays Mission 1. Other missions have not been driven by a script yet; any runtime-only code they reach runs in the interpreter until profiled.
+- **Sound**: the Z80 driver runs, but the YM2610 is silent (neogeorecomp ROADMAP).
+- **Coverage**: the soak plays team matches against the CPU with player 1. Other modes (versus, survivor, practice, the boss) have not been scripted yet; any runtime-only code they reach runs in the interpreter until profiled.

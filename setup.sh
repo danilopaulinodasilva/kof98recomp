@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # setup.sh - the Quick start for Linux/macOS: the same steps as Setup.cmd.
 # Checks prerequisites (and offers the apt command when one is missing),
-# finds and checksums your ROMs, builds, profiles, and writes ./metalslug.sh.
+# finds and checksums your ROMs, builds, profiles, and writes ./kof98.sh.
 # Re-running resumes. Details go to setup.log.
 #
-#   ./setup.sh [--rom-zip mslug.zip] [--bios-zip neogeo.zip] [--yes] [--no-profile]
+#   ./setup.sh [--rom-zip kof98h.zip] [--bios-zip neogeo.zip] [--yes] [--no-profile]
 set -u
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 LOG="$ROOT/setup.log"
@@ -54,7 +54,7 @@ if [ ! -f "$ROOT/neogeorecomp/ext/musashi/m68k_in.c" ]; then
     else
         ref="$(head -1 "$ROOT/toolkit.ref" | tr -d '\r ')"
         rm -rf "$ROOT/neogeorecomp"
-        run git clone https://github.com/sp00nznet/neogeorecomp.git "$ROOT/neogeorecomp" || fail "git could not clone the toolkit."
+        run git clone https://github.com/danilopaulinodasilva/neogeorecomp.git "$ROOT/neogeorecomp" || fail "git could not clone the toolkit."
         run git -C "$ROOT/neogeorecomp" checkout "$ref" || fail "the toolkit has no commit $ref."
         run git -C "$ROOT/neogeorecomp" submodule update --init --recursive || fail "git could not fetch the toolkit's submodules."
     fi
@@ -62,9 +62,11 @@ fi
 say "  toolkit ready"
 
 step "Checking your ROM files"
-GAME="201-p1.p1:08d8daa5 201-s1.s1:2f55958d 201-m1.m1:c28b3253 201-c1.c1:72813676 201-c2.c2:96f62574
-      201-c3.c3:5121456a 201-c4.c4:f4ad59a3 201-v1.v1:23d22ed1 201-v2.v2:472cf9db"
-BIOS="sp-s2.sp1:9036d879 sfix.sfix:c2ea0cfd sm1.sm1:94416d67 000-lo.lo:5a86cff2"
+GAME="242-pn1.bin:61ac868a 242-p2.bin:980aba4c 242-s1.bin:7f7b4805 242-mg1.bin:4e7a6b1b
+      242-c1.bin:e564ecd6 242-c2.bin:bd959b60 242-c3.bin:22127b4f 242-c4.bin:0b4fa044
+      242-c5.bin:9d10bed3 242-c6.bin:da07b6a2 242-c7.bin:f6d7a38a 242-c8.bin:c823e045
+      242-v1.bin:b9ea8051 242-v2.bin:cc11106e 242-v3.bin:044ea4e1 242-v4.bin:7985ea30"
+BIOS="neo-po.bin:16d0c132 sfix.sfix:c2ea0cfd sm1.sm1:94416d67 000-lo.lo:5a86cff2"
 crc() { python3 -c 'import sys,zlib; print("%08x" % (zlib.crc32(open(sys.argv[1],"rb").read()) & 0xffffffff))' "$1" 2>/dev/null \
         || gzip -c "$1" | tail -c8 | od -An -tx4 -N4 | tr -d ' \n'; }
 missing_of() { for e in $1; do f="${e%%:*}"; c="${e##*:}"; [ -f "$ROMS/$f" ] && [ "$(crc "$ROMS/$f")" = "$c" ] || echo "$f"; done; }
@@ -75,18 +77,23 @@ find_zip() {
 }
 mkdir -p "$ROMS"
 if [ -n "$(missing_of "$GAME")" ]; then
-    z="$(find_zip mslug.zip "$ROM_ZIP")"; [ -f "$z" ] && run unzip -o -j "$z" $(missing_of "$GAME") -d "$ROMS"
+    z="$(find_zip kof98h.zip "$ROM_ZIP")"
+    if [ -f "$z" ]; then
+        run unzip -o -j "$z" $(missing_of "$GAME") -d "$ROMS"
+        # a non-merged set carries the system ROMs too
+        run unzip -o -j "$z" $(missing_of "$BIOS") -d "$ROMS"
+    fi
 fi
 if [ -n "$(missing_of "$BIOS")" ]; then
     z="$(find_zip neogeo.zip "$BIOS_ZIP")"; [ -f "$z" ] && run unzip -o -j "$z" $(missing_of "$BIOS") -d "$ROMS"
 fi
 gone="$(missing_of "$GAME") $(missing_of "$BIOS")"
 gone="$(echo $gone)"
-[ -z "$gone" ] || fail "these ROM files are missing or don't match the MAME sets: $gone. Point setup.sh at your mslug.zip and neogeo.zip."
-say "  all 13 ROM files present and verified"
+[ -z "$gone" ] || fail "these ROM files are missing or don't match the MAME sets: $gone. Point setup.sh at your kof98h.zip and neogeo.zip."
+say "  all 20 ROM files present and verified"
 
 step "Building (the recompiler runs on your ROMs; a few minutes)"
-run cmake -S "$ROOT" -B "$BUILD" -DCMAKE_BUILD_TYPE=Release -DMSLUG_ROM_DIR="$ROMS" || fail "CMake could not configure the build."
+run cmake -S "$ROOT" -B "$BUILD" -DCMAKE_BUILD_TYPE=Release -DKOF98_ROM_DIR="$ROMS" || fail "CMake could not configure the build."
 run cmake --build "$BUILD" --parallel || fail "the build failed."
 say "  built"
 
@@ -98,11 +105,11 @@ if [ "$PROFILE" = 1 ]; then
 fi
 
 step "Creating the launcher"
-cat > "$ROOT/metalslug.sh" <<EOF
+cat > "$ROOT/kof98.sh" <<EOF
 #!/bin/sh
-exec "$BUILD/metalslug" --rom-path "$ROMS" "\$@"
+exec "$BUILD/kof98" --rom-path "$ROMS" "\$@"
 EOF
-chmod +x "$ROOT/metalslug.sh"
+chmod +x "$ROOT/kof98.sh"
 echo
-echo "Done. Run ./metalslug.sh to play."
-echo "Keys: arrows move, Z shoot, X jump, C grenade, 5 insert coin, 1 start, Esc quit. No sound yet."
+echo "Done. Run ./kof98.sh to play."
+echo "Keys: arrows move, Z/X/C/V buttons A-D, 1 start (no coin: it runs as an AES), Esc quit. No sound yet."

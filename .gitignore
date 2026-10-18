@@ -50,6 +50,6 @@ entries*.txt
 # Setup.cmd output
 deps/
 setup.log
-Metal Slug.cmd
-Metal Slug.lnk
-metalslug.sh
+KOF98.cmd
+KOF98.lnk
+kof98.sh

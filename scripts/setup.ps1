@@ -2,16 +2,16 @@
   setup.ps1 - the Quick start behind Setup.cmd.
 
   Checks every prerequisite and asks before installing anything, finds your
-  Metal Slug and Neo Geo ROM zips, verifies them, builds the recompiled game
+  KOF98 (kof98h) and Neo Geo ROM zips, verifies them, builds the recompiled game
   (the same commands as README.md's step-by-step route), and leaves a
-  "Metal Slug" launcher in the repo folder. Re-running resumes: finished
+  "KOF98" launcher in the repo folder. Re-running resumes: finished
   steps are skipped. Details of every step go to setup.log.
 
   Non-interactive use:
-    Setup.cmd -RomZip C:\roms\mslug.zip -BiosZip C:\roms\neogeo.zip -Yes
+    Setup.cmd -RomZip C:\roms\kof98h.zip -BiosZip C:\roms\neogeo.zip -Yes
 #>
 param(
-    [string]$RomZip,      # MAME "mslug" set
+    [string]$RomZip,      # MAME "kof98h" set
     [string]$BiosZip,     # MAME "neogeo" set
     [string]$RomDir,      # or: a folder that already holds the unzipped files
     [switch]$Yes,         # answer yes to every install question
@@ -130,7 +130,7 @@ if (-not (Test-Path (Join-Path $Root 'neogeorecomp\ext\musashi\m68k_in.c'))) {
         $ref = (Get-Content (Join-Path $Root 'toolkit.ref') -ErrorAction Stop | Select-Object -First 1).Trim()
         $dst = Join-Path $Root 'neogeorecomp'
         if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
-        if (-not (Run 'git' @('clone', 'https://github.com/sp00nznet/neogeorecomp.git', $dst))) { Fail 'git could not clone the toolkit; check your connection.' }
+        if (-not (Run 'git' @('clone', 'https://github.com/danilopaulinodasilva/neogeorecomp.git', $dst))) { Fail 'git could not clone the toolkit; check your connection.' }
         if (-not (Run 'git' @('-C', $dst, 'checkout', $ref))) { Fail "the toolkit has no commit $ref; download a newer copy of this repo." }
         if (-not (Run 'git' @('-C', $dst, 'submodule', 'update', '--init', '--recursive'))) { Fail 'git could not fetch the toolkit''s submodules.' }
     }
@@ -156,13 +156,14 @@ public static class Crc32 {
 '@
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-# MAME sets "mslug" and "neogeo" (the files used from it).
+# MAME sets "kof98h" and "neogeo" (the files used from it).
 $Game = [ordered]@{
-    '201-p1.p1' = '08d8daa5'; '201-s1.s1' = '2f55958d'; '201-m1.m1' = 'c28b3253'
-    '201-c1.c1' = '72813676'; '201-c2.c2' = '96f62574'; '201-c3.c3' = '5121456a'; '201-c4.c4' = 'f4ad59a3'
-    '201-v1.v1' = '23d22ed1'; '201-v2.v2' = '472cf9db'
+    '242-pn1.bin' = '61ac868a'; '242-p2.bin' = '980aba4c'; '242-s1.bin' = '7f7b4805'; '242-mg1.bin' = '4e7a6b1b'
+    '242-c1.bin' = 'e564ecd6'; '242-c2.bin' = 'bd959b60'; '242-c3.bin' = '22127b4f'; '242-c4.bin' = '0b4fa044'
+    '242-c5.bin' = '9d10bed3'; '242-c6.bin' = 'da07b6a2'; '242-c7.bin' = 'f6d7a38a'; '242-c8.bin' = 'c823e045'
+    '242-v1.bin' = 'b9ea8051'; '242-v2.bin' = 'cc11106e'; '242-v3.bin' = '044ea4e1'; '242-v4.bin' = '7985ea30'
 }
-$Bios = [ordered]@{ 'sp-s2.sp1' = '9036d879'; 'sfix.sfix' = 'c2ea0cfd'; 'sm1.sm1' = '94416d67'; '000-lo.lo' = '5a86cff2' }
+$Bios = [ordered]@{ 'neo-po.bin' = '16d0c132'; 'sfix.sfix' = 'c2ea0cfd'; 'sm1.sm1' = '94416d67'; '000-lo.lo' = '5a86cff2' }
 
 function FileOk([string]$path, [string]$crc) {
     if (-not (Test-Path $path)) { return $false }
@@ -201,8 +202,9 @@ if ($RomDir) {
     }
 }
 if ((Missing $Game).Count) {
-    $zip = FindZip 'mslug.zip' $RomZip
-    if ($zip -and (Test-Path $zip)) { FromZip $zip $Game }
+    $zip = FindZip 'kof98h.zip' $RomZip
+    # a non-merged set carries the system ROMs too
+    if ($zip -and (Test-Path $zip)) { FromZip $zip $Game; FromZip $zip $Bios }
 }
 if ((Missing $Bios).Count) {
     $zip = FindZip 'neogeo.zip' $BiosZip
@@ -211,13 +213,13 @@ if ((Missing $Bios).Count) {
 $gone = @(Missing $Game) + @(Missing $Bios)
 if ($gone.Count) {
     Log "missing or wrong: $($gone -join ', ')"
-    Fail "these ROM files are missing or don't match the MAME sets: $($gone -join ', '). Point Setup.cmd at your mslug.zip and neogeo.zip."
+    Fail "these ROM files are missing or don't match the MAME sets: $($gone -join ', '). Point Setup.cmd at your kof98h.zip and neogeo.zip."
 }
-Say '  all 13 ROM files present and verified'
+Say '  all 20 ROM files present and verified'
 
 # ---- 4. build ----
 Step 'Building (the recompiler runs on your ROMs; a few minutes)'
-$cfg = @('-S', $Root, '-B', $Build, '-G', 'Visual Studio 17 2022', '-A', 'x64', "-DMSLUG_ROM_DIR=$Roms")
+$cfg = @('-S', $Root, '-B', $Build, '-G', 'Visual Studio 17 2022', '-A', 'x64', "-DKOF98_ROM_DIR=$Roms")
 if (-not $NoWindow) { $cfg += "-DSDL2_DIR=$SdlDir\cmake" }
 if (-not (Run 'cmake' $cfg)) { Fail 'CMake could not configure the build.' }
 if (-not (Run 'cmake' @('--build', $Build, '--config', 'Release', '--parallel'))) { Fail 'the build failed.' }
@@ -232,16 +234,16 @@ if (-not $NoProfile) {
 
 # ---- 5. launcher ----
 Step 'Creating the launcher'
-$exe = Join-Path $Build 'Release\metalslug.exe'
+$exe = Join-Path $Build 'Release\kof98.exe'
 if (-not (Test-Path $exe)) { Fail "the build did not produce $exe." }
 $cmdArgs = if ($NoWindow) { '--headless' } else { '' }
-Set-Content -Path (Join-Path $Root 'Metal Slug.cmd') -Encoding ASCII -Value @(
+Set-Content -Path (Join-Path $Root 'KOF98.cmd') -Encoding ASCII -Value @(
     '@echo off',
-    "start `"`" `"%~dp0build\Release\metalslug.exe`" --rom-path `"%~dp0roms`" $cmdArgs"
+    "start `"`" `"%~dp0build\Release\kof98.exe`" --rom-path `"%~dp0roms`" $cmdArgs"
 )
 try {
     $sh = New-Object -ComObject WScript.Shell
-    $lnk = $sh.CreateShortcut((Join-Path $Root 'Metal Slug.lnk'))
+    $lnk = $sh.CreateShortcut((Join-Path $Root 'KOF98.lnk'))
     $lnk.TargetPath = $exe
     $lnk.Arguments = "--rom-path `"$Roms`" $cmdArgs"
     $lnk.WorkingDirectory = $Root
@@ -249,6 +251,6 @@ try {
 } catch { Log "shortcut not created: $($_.Exception.Message)" }
 
 Write-Host ""
-Write-Host 'Done. Double-click "Metal Slug" in this folder to play.' -ForegroundColor Green
-Write-Host 'Keys: arrows move, Z shoot, X jump, C grenade, 5 insert coin, 1 start, Esc quit. No sound yet.'
+Write-Host 'Done. Double-click "KOF98" in this folder to play.' -ForegroundColor Green
+Write-Host 'Keys: arrows move, Z/X/C/V buttons A-D, 1 start (no coin: it runs as an AES), Esc quit. No sound yet.'
 Log 'setup finished'

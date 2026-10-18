@@ -5,7 +5,7 @@ Bug reports from playing are the most useful thing right now: what you did, what
 ## Pull requests
 
 - Most fixes belong in [neogeorecomp](https://github.com/sp00nznet/neogeorecomp): this repo describes the ROM set and holds test scripts. Nothing game-specific goes into the toolkit, and nothing hardware-specific goes here.
-- Run `metalslug --headless --verify` with the scripts in `tests/` and include the `[verify]` line.
+- Run `kof98 --headless --verify` with the scripts in `tests/` and include the `[verify]` line.
 - **Never include ROMs, the recompiled C from `build/generated`, entry-point lists, or disassembly.** Everything derived from the game stays on your machine.
 
 ## Where your code comes from
