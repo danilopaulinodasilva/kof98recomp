@@ -1,6 +1,6 @@
 # The King of Fighters '98: notes
 
-What this title needs from the toolkit, and what bringing it up showed. These notes cover behaviour. Nothing from the ROM is published, apart from the widescreen patch in `src/game.c`: the addresses of 16 immediate operands and their original values, which it checks before changing them.
+What this title needs from the toolkit, and what bringing it up showed. These notes cover behaviour. Nothing from the ROM is published, apart from the widescreen patch in `src/game.c`: the addresses of 42 immediate operands and their original values, which it checks before changing them.
 
 ## The set
 
@@ -33,11 +33,13 @@ Bringing it up as an AES found a toolkit bug: the AES has no board SFIX or SM1, 
 
 ## Widescreen
 
-`--widescreen` (or any `--width` over 320) patches the program at load time through `ng_game_t.patch`. Stage backgrounds are layers of 32 sprite columns, a 512-pixel ring. The game streams tiles into the columns near the camera and hides the rest by giving them zero height, and both ranges are sized for 320 pixels. Two routines draw layers, one with a height per column (railings, floors), and both carry the same visibility test. The patch widens the streaming window and the visibility tests by the margin on each side. The values are immediate operands, listed in `ng_game_t.live_words`, so the same recompiled build runs either way, and `--verify` checks both.
+`--widescreen` (or any `--width` over 320) patches the program at load time through `ng_game_t.patch`. Stage backgrounds are layers of 32 sprite columns, a 512-pixel ring. The game streams tiles into the columns near the camera and hides the rest by giving them zero height, and both ranges are sized for 320 pixels. Two routines draw layers, one with a height per column (railings, floors), and both carry the same visibility test. The patch widens the streaming window and the visibility tests by the margin on each side, and narrows the camera range to match. The values are immediate operands, listed in `ng_game_t.live_words`, so the same recompiled build runs either way, and `--verify` checks both.
 
 - The game left the last column before the right edge hidden, behind the overscan mask, so the visible range gets 8 pixels of slack.
 - The streaming window (352 pixels plus both margins) has to fit the 512-pixel ring, so the patch stops at 80-pixel margins: wider output leaves the outermost pixels black.
-- Fights use the full width, including with the camera against either end of a stage. A fighter entering between rounds is visible a little earlier.
+- The window starts at the camera minus 16 without being aligned to a column, which works because the camera starts on one. It grows by whole columns (48 pixels per side at 400 wide); a misaligned window fetched columns 8 pixels off.
+- Stages are 768 pixels wide, and each stage's setup routine (nine of them) sets the camera range to 0..448, where a 320-pixel view reaches either end. Past the ends the map repeats. Worse, a column left of the stage costs the game frames: it takes the column modulo the map width by repeated subtraction, and index -1 is 65,535. So the camera range shrinks by the rounded margin on each side. The stage ends sit 48 pixels further in at 400 wide, and the view always shows stage art.
+- All nine stages (stage index at `$10A7EA`) were checked with the camera against both ends. A fighter entering between rounds is visible a little earlier.
 - Menus, the character select and the win screens are fixed 320-pixel pictures; their margins stay black.
 - The 8-pixel black columns at the edges of the original picture come from the fix layer, which CRTs hid in the overscan. The runtime doesn't draw them when the output is wider than 320.
 
@@ -47,7 +49,7 @@ Bringing it up as an AES found a toolkit bug: the AES has no board SFIX or SM1, 
 - The profile pass adds about 530 runtime-only entry points across attract and a play session.
 - At boot the game runs a routine from work RAM, which the static recompiler cannot see. It is about 11.7M interpreted instructions, all during start-up; after that the soak runs natively.
 
-End state, with the profile pass (which plays the soak in widescreen too): 40,459 routines and 57,604 dispatch entries. `--verify` finds 0 mismatches over 12.1M blocks of the soak, and over 11.8M in widescreen.
+End state, with the profile pass (which plays the soak in widescreen too): 40,654 routines and 57,813 dispatch entries. `--verify` finds 0 mismatches over 12.1M blocks of the soak, and over 11.7M in widescreen.
 
 ## Not yet
 

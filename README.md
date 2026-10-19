@@ -13,7 +13,7 @@ The toolkit does all the work; this repo describes the ROM set and builds the ga
 - Runs as an AES console with the Japanese AES system ROM (`neo-po.bin`): the AES cart refuses to run on an MVS board ([docs/game-notes.md](docs/game-notes.md)).
 - The 5 MB program is banked: the four 1 MB banks behind `$200000` are recompiled separately and dispatched by the bank that is mapped.
 - **Widescreen** (`--widescreen`, 400×224): fights draw the stage across the whole width. Menus and other screens keep their 320-pixel picture in the middle.
-- A 5-minute scripted soak runs natively after the profile pass, apart from a routine the game runs from work RAM at boot. `--verify` checks **12.1M** recompiled blocks (11.8M in widescreen) against the Musashi interpreter with **0 mismatches**.
+- A 5-minute scripted soak runs natively after the profile pass, apart from a routine the game runs from work RAM at boot. `--verify` checks **12.1M** recompiled blocks (11.7M in widescreen) against the Musashi interpreter with **0 mismatches**.
 - Not yet: sound, player 2 keys, gamepad support, and a settings menu.
 
 ## Screenshots

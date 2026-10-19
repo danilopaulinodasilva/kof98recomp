@@ -10,39 +10,60 @@
  * and hides the rest by giving them zero height. Both ranges are
  * immediates sized for 320 pixels, so a wider screen widens them by the
  * margin on each side. Each entry: the immediate's address, its original
- * value, how much one pixel of margin adds, and the slack in pixels.
+ * value, how much one pixel of margin adds, the slack in pixels, and
+ * whether it takes the margin rounded up to a whole 16-pixel column.
  *
  * The visible range gets 8 pixels of slack: the game leaves the last
  * column before the right edge hidden, which the overscan mask covered.
  * The streaming window is 352 pixels plus both margins and must fit the
- * ring, so margins stop at 80 pixels (480 wide). */
+ * ring, so margins stop at 80 pixels (480 wide).
+ *
+ * The streaming window starts at the camera minus 16, unaligned, which
+ * only works because the camera starts on a column; so the window grows
+ * by whole columns.
+ *
+ * Stages are 768 pixels wide and the camera stops where a 320-pixel view
+ * reaches either end. Past the ends the map repeats, and fetching a column
+ * left of the stage costs the game frames (it takes the column modulo the
+ * map width by repeated subtraction). So the camera stops a rounded
+ * margin earlier: the window then never passes the stage. */
 #define WIDE_PATCHES(X) \
     /* tile streaming window: set up (two layer kinds), then followed */ \
-    X(0x007B58, 0x0010, 1, 0) X(0x007B60, 0x0160, 2, 0) \
-    X(0x007BF4, 0x0010, 1, 0) X(0x007BFE, 0x0150, 1, 0) \
-    X(0x0083D6, 0x0150, 1, 0) X(0x0083EE, 0x0010, 1, 0) \
-    X(0x008694, 0x0150, 1, 0) X(0x0086AC, 0x0010, 1, 0) \
+    X(0x007B58, 0x0010, 1, 0, 1) X(0x007B60, 0x0160, 2, 0, 1) \
+    X(0x007BF4, 0x0010, 1, 0, 1) X(0x007BFE, 0x0150, 1, 0, 1) \
+    X(0x0083D6, 0x0150, 1, 0, 1) X(0x0083EE, 0x0010, 1, 0, 1) \
+    X(0x008694, 0x0150, 1, 0, 1) X(0x0086AC, 0x0010, 1, 0, 1) \
     /* visible columns: x + offset must be within limit (as x << 7, and x) */ \
-    X(0x007FCA, 0x0780, 128, 8) X(0x007FCE, 0xA600, 256, 8) \
-    X(0x007FEE, 0x0780, 128, 8) X(0x007FF2, 0xA600, 256, 8) \
-    X(0x00802C, 0x000F, 1, 8)   X(0x008030, 0x014C, 2, 8) \
-    X(0x008054, 0x000F, 1, 8)   X(0x008058, 0x014C, 2, 8) \
+    X(0x007FCA, 0x0780, 128, 8, 0) X(0x007FCE, 0xA600, 256, 8, 0) \
+    X(0x007FEE, 0x0780, 128, 8, 0) X(0x007FF2, 0xA600, 256, 8, 0) \
+    X(0x00802C, 0x000F, 1, 8, 0)   X(0x008030, 0x014C, 2, 8, 0) \
+    X(0x008054, 0x000F, 1, 8, 0)   X(0x008058, 0x014C, 2, 8, 0) \
     /* the same for layers with a height per column (railings, floors) */ \
-    X(0x00824C, 0x0780, 128, 8) X(0x008250, 0xA600, 256, 8) \
-    X(0x008278, 0x0780, 128, 8) X(0x00827C, 0xA600, 256, 8) \
-    X(0x0082C2, 0x000F, 1, 8)   X(0x0082C6, 0x014C, 2, 8) \
-    X(0x0082F2, 0x000F, 1, 8)   X(0x0082F6, 0x014C, 2, 8)
+    X(0x00824C, 0x0780, 128, 8, 0) X(0x008250, 0xA600, 256, 8, 0) \
+    X(0x008278, 0x0780, 128, 8, 0) X(0x00827C, 0xA600, 256, 8, 0) \
+    X(0x0082C2, 0x000F, 1, 8, 0)   X(0x0082C6, 0x014C, 2, 8, 0) \
+    X(0x0082F2, 0x000F, 1, 8, 0)   X(0x0082F6, 0x014C, 2, 8, 0) \
+    /* camera limits, set up by each stage (the high word of 16.16 x) */ \
+    X(0x091182, 0x0000, 1, 0, 1)   X(0x09118A, 0x01C0, -1, 0, 1) \
+    X(0x091504, 0x0000, 1, 0, 1)   X(0x09150C, 0x01C0, -1, 0, 1) \
+    X(0x09192A, 0x0000, 1, 0, 1)   X(0x091932, 0x01C0, -1, 0, 1) \
+    X(0x091A6E, 0x0000, 1, 0, 1)   X(0x091A76, 0x01C0, -1, 0, 1) \
+    X(0x0920BA, 0x0000, 1, 0, 1)   X(0x0920C2, 0x01C0, -1, 0, 1) \
+    X(0x0922B0, 0x0000, 1, 0, 1)   X(0x0922B8, 0x01C0, -1, 0, 1) \
+    X(0x092656, 0x0000, 1, 0, 1)   X(0x09265E, 0x01C0, -1, 0, 1) \
+    X(0x092824, 0x0000, 1, 0, 1)   X(0x09282C, 0x01C0, -1, 0, 1) \
+    X(0x092AE6, 0x0000, 1, 0, 1)   X(0x092AEE, 0x01C0, -1, 0, 1)
 
 #define MAX_MARGIN 80
 
-static const struct { uint32_t addr; uint16_t orig; int per_px, slack; } k_wide[] = {
-#define ENTRY(a, o, k, sl) {a, o, k, sl},
+static const struct { uint32_t addr; uint16_t orig; int per_px, slack, round; } k_wide[] = {
+#define ENTRY(a, o, k, sl, r) {a, o, k, sl, r},
     WIDE_PATCHES(ENTRY)
 #undef ENTRY
 };
 
 static const uint32_t k_live_words[] = {
-#define ADDR(a, o, k, sl) a,
+#define ADDR(a, o, k, sl, r) a,
     WIDE_PATCHES(ADDR)
 #undef ADDR
     0
@@ -62,7 +83,8 @@ static void patch(uint8_t *prom, size_t size, int screen_w) {
         }
     }
     for (size_t i = 0; i < n; i++) {
-        uint16_t v = (uint16_t)(k_wide[i].orig + (margin + k_wide[i].slack) * k_wide[i].per_px);
+        int m = k_wide[i].round ? (margin + 15) & ~15 : margin;
+        uint16_t v = (uint16_t)(k_wide[i].orig + (m + k_wide[i].slack) * k_wide[i].per_px);
         prom[k_wide[i].addr] = (uint8_t)(v >> 8);
         prom[k_wide[i].addr + 1] = (uint8_t)v;
     }
