@@ -7,23 +7,18 @@ This is the first step of a bigger plan: bring the whole KOF series, from '94 to
 > **No game data here.** You need your own dumps of the game and the Neo Geo system ROM (MAME sets `kof98h` and `neogeo`). The recompiled C is generated from your dump, on your machine, at build time. It is never committed or distributed, and neither is anything else derived from the ROMs.
 
 <p align="center">
-  <img src="docs/screenshots/fight-wide.png" alt="A fight in widescreen" width="600"><br>
-  <img src="docs/screenshots/select-wide.png" alt="The character select in widescreen" width="600">
+  <img src="docs/screenshots/fight.png" alt="A fight in widescreen" width="720">
 </p>
 
 ## Screenshots
 
-The same frames from the recompiled build, as the original 4:3 picture and in widescreen (`--headless --screenshot`, with and without `--widescreen`):
+Real output from the recompiled build, in widescreen (`--widescreen --headless --screenshot`):
 
-| Original (4:3) | Widescreen (16:9) |
+| | |
 |---|---|
-| ![NEOGEO boot](docs/screenshots/bios.png) | ![NEOGEO boot, widescreen](docs/screenshots/bios-wide.png) |
-| ![Intro](docs/screenshots/intro.png) | ![Intro, widescreen](docs/screenshots/intro-wide.png) |
-| ![Title](docs/screenshots/title.png) | ![Title, widescreen](docs/screenshots/title-wide.png) |
-| ![Mode select](docs/screenshots/mode.png) | ![Mode select, widescreen](docs/screenshots/mode-wide.png) |
-| ![Character select](docs/screenshots/select.png) | ![Character select, widescreen](docs/screenshots/select-wide.png) |
-| ![Order select](docs/screenshots/order.png) | ![Order select, widescreen](docs/screenshots/order-wide.png) |
-| ![Fight](docs/screenshots/fight.png) | ![Fight, widescreen](docs/screenshots/fight-wide.png) |
+| ![Intro](docs/screenshots/intro.png) | ![Title](docs/screenshots/title.png) |
+| ![Mode select](docs/screenshots/mode.png) | ![Character select](docs/screenshots/select.png) |
+| ![Order select](docs/screenshots/order.png) | ![Fight](docs/screenshots/fight-hit.png) |
 
 The stone behind the title and the menus uses new margin art ([below](#widescreen-art)).
 
