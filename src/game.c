@@ -151,7 +151,22 @@ static const uint8_t *art_column(int bg, int x) {
             FILE *f = fopen(path, "rb");
             if (f) {
                 fclose(f);
-                s_art[bg].png = ng_read_indexed_png(path, &s_art[bg].w, &s_art[bg].h);
+                uint8_t rgb[768];
+                uint8_t *png = ng_read_indexed_png(path, &s_art[bg].w, &s_art[bg].h, rgb);
+                /* Editors add colours of their own to the palette: those
+                 * become the nearest of the 15 the background has. */
+                for (int i = 0; png && i < s_art[bg].w * s_art[bg].h; i++) {
+                    if (png[i] < 16) continue;
+                    const uint8_t *c = rgb + png[i] * 3;
+                    int best = 1, best_d = 1 << 30;
+                    for (int k = 1; k < 16; k++) {
+                        int dr = c[0] - rgb[k * 3], dg = c[1] - rgb[k * 3 + 1], db = c[2] - rgb[k * 3 + 2];
+                        int d = dr * dr + dg * dg + db * db;
+                        if (d < best_d) { best_d = d; best = k; }
+                    }
+                    png[i] = (uint8_t)best;
+                }
+                s_art[bg].png = png;
             }
         }
     }
@@ -165,7 +180,7 @@ static const uint8_t *art_column(int bg, int x) {
     int x0 = k_backgrounds[bg].art_x + x;
     for (int y = 0; y < s_art[bg].h && y < 512; y++)
         for (int i = 0; i < 16; i++)
-            if (x0 + i >= 0 && x0 + i < s_art[bg].w) px[y * 16 + i] = s_art[bg].png[y * s_art[bg].w + x0 + i] & 15;
+            if (x0 + i >= 0 && x0 + i < s_art[bg].w) px[y * 16 + i] = s_art[bg].png[y * s_art[bg].w + x0 + i];
     return px;
 }
 #else
