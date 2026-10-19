@@ -5,6 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 ## [Unreleased]
 
 ### Added
+- The pause menu (from neogeorecomp): Esc for volume, fullscreen, scanlines, 4:3 or 16:9, both players' keys, reset and quit.
 - Player 2 and gamepads (from neogeorecomp).
 - `tests/modes/`: one script per mode (team play, team VS, single play, single VS, survivor, practice), from the title screen into a fight where both players attack and do special moves; the profile pass plays each, at 320 and 400 wide. `tools/mode_scripts.py` writes them.
 - Sound, from neogeorecomp's YM2610 synthesis: music, voices and effects.

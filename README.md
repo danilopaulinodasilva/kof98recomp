@@ -36,7 +36,7 @@ Alpha, with sound.
   - fights draw the stage across the whole width, on all nine stages, with the camera kept inside the stage art;
   - menus and other backgrounds continue into the margins in the game's own graphics: mirrored textures, repeated patterns, gradients carried on in their edge colour;
   - the stone behind the menus and the title has new margin art ([below](#widescreen-art)).
-- Two players, on the keyboard or on gamepads.
+- Two players, on the keyboard or on gamepads, and a pause menu with display, sound and key settings.
 
 ## What was done
 
@@ -53,7 +53,7 @@ KOF98 runs on [neogeorecomp](https://github.com/danilopaulinodasilva/neogeorecom
 
 ## Roadmap
 
-1. **A launcher** with display, filter and game options, remappable keys, and unlocking every character ([ROADMAP.md](ROADMAP.md)).
+1. **More in the menu**: CRT shaders, save states, gamepad remapping, and unlocking every character ([ROADMAP.md](ROADMAP.md)).
 2. **The boss fight in the test sessions**, so its code runs natively and is verified.
 3. **The rest of the series**, one repo per game, the same way:
    - **KOF '94 to '97** first: they are unencrypted and close to '98, so they are expected to need mostly their ROM layout and their own widescreen patches;
@@ -87,7 +87,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before sending code.
 
 **On Linux or macOS**, run `./setup.sh` instead, optionally with `--rom-zip PATH --bios-zip PATH`. It does the same steps and offers the `apt` command for anything missing. When it finishes, run `./kof98.sh`.
 
-Keys: player 1 **arrows** and **Z X C V** (buttons A B C D), **1** start; player 2 **R F D G** and **A S Q W**, **2** start; **Esc** quit. Gamepads work too: the first one is player 1, the second player 2. It runs as an AES, so there are no coins: press start on the title screen. Start pauses during a round. For widescreen, run `./kof98.sh --widescreen`.
+Keys: player 1 **arrows** and **Z X C V** (buttons A B C D), **1** start; player 2 **R F D G** and **A S Q W**, **2** start. Gamepads work too: the first one is player 1, the second player 2.
+
+**Esc** pauses and opens the menu: volume, fullscreen, scanlines, 4:3 or 16:9, each player's keys, reset and quit. The settings are kept for the next time. It runs as an AES, so there are no coins: press start on the title screen. Start pauses during a round. For widescreen, run `./kof98.sh --widescreen`.
 
 ### Step by step
 
