@@ -110,15 +110,18 @@ static void patch(uint8_t *prom, size_t size, int screen_w) {
  * an indexed PNG in the asset folder (KOF98_ASSETS, default assets/ in
  * the repo), painted in the background's palette, which the copies draw
  * through palette RAM so it fades with the screen. `art_x` is where the
- * background's X 0 falls in the image. Without the file, the margins are
- * mirrored. */
-static const struct { uint32_t tile; int period, colour; const char *art; int art_x; } k_backgrounds[] = {
-    {0x07417, 0, 0, "stone.png", 80},                      /* stone: how to play, ranking */
-    {0x07425, 0, 0, "stone.png", 96},                      /* the same 16 pixels on: mode select */
+ * background's X 0 falls in the image, and `art_xl` the same for the left
+ * margin: mode select shows the stone 16 pixels on from how to play, and
+ * the art holds no picture to fill those 16 pixels, so its left margin
+ * meets the picture where it is. Without the file, the margins are
+ * mirrored. `bands` extends a layer only while it is a plain band. */
+static const struct { uint32_t tile; int period, colour; const char *art; int art_x, art_xl; int bands; } k_backgrounds[] = {
+    {0x07417, 0, 0, "stone.png", 80, 80},                  /* stone: how to play, ranking */
+    {0x07425, 0, 0, "stone.png", 96, 80},                  /* the same 16 pixels on: mode select */
     {0x07416, 0, 0, NULL, 0},                              /* continue */
     {0x0787E, 0, 1, NULL, 0},                              /* character select: blue to red */
     {0x07824, 10, 1, NULL, 0},                             /* and its "K.O.F." lettering */
-    {0x097B6, 0, 0, NULL, 0},                              /* title logo */
+    {0x097B6, 0, 0, "stone-red.png", 80, 80},              /* red stone behind the title logo */
     {0x094FC, 0, 0, NULL, 0}, {0x09B72, 0, 0, NULL, 0},    /* intro */
     {0x0D23F, 0, 0, NULL, 0}, {0x0D526, 0, 0, NULL, 0},
     {0x08DD0, 0, 0, NULL, 0}, {0x08EE8, 0, 0, NULL, 0},    /* team story */
@@ -126,14 +129,22 @@ static const struct { uint32_t tile; int period, colour; const char *art; int ar
     {0x0E237, 0, 0, NULL, 0}, {0x0E273, 0, 0, NULL, 0}, {0x0E29B, 0, 0, NULL, 0},
     {0x0E2C3, 0, 0, NULL, 0}, {0x0E2D7, 0, 0, NULL, 0}, {0x0E2EB, 0, 0, NULL, 0},
     {0x07612, 0, 0, NULL, 0},                              /* the white flash of a K.O. */
+    {0x09128, 0, 0, NULL, 0, 1},                           /* letterbox bars: title, intro */
 };
 #define N_BACKGROUNDS (sizeof(k_backgrounds) / sizeof(k_backgrounds[0]))
+
+static int same_columns(const uint16_t *vram, int first, int last, int rows) {
+    if (rows > 32) rows = 32;
+    for (int n = first + 1; n <= last; n++)
+        if (memcmp(vram + n * 64, vram + first * 64, (size_t)rows * 2 * sizeof(uint16_t))) return 0;
+    return 1;
+}
 
 #ifdef KOF98_ASSET_DIR
 /* Loaded art, and the 16-pixel columns cut from it (16 indices per line,
  * 512 lines), made once per background and X. */
 static struct { uint8_t *png; int w, h, tried; } s_art[N_BACKGROUNDS];
-static struct { int bg, x; uint8_t px[16 * 512]; } *s_cols;
+static struct { int bg, x, empty; uint8_t px[16 * 512]; } *s_cols;
 static int s_ncols;
 
 static const uint8_t *art_column(int bg, int x) {
@@ -172,16 +183,20 @@ static const uint8_t *art_column(int bg, int x) {
     }
     if (!s_art[bg].png) return NULL;
     for (int i = 0; i < s_ncols; i++)
-        if (s_cols[i].bg == bg && s_cols[i].x == x) return s_cols[i].px;
+        if (s_cols[i].bg == bg && s_cols[i].x == x) return s_cols[i].empty ? NULL : s_cols[i].px;
     s_cols = realloc(s_cols, sizeof(*s_cols) * (size_t)(s_ncols + 1));
     uint8_t *px = s_cols[s_ncols].px;
     s_cols[s_ncols].bg = bg; s_cols[s_ncols].x = x; s_ncols++;
     memset(px, 0, 16 * 512);
-    int x0 = k_backgrounds[bg].art_x + x;
+    int x0 = (x < 0 ? k_backgrounds[bg].art_xl : k_backgrounds[bg].art_x) + x;
+    int any = 0;
     for (int y = 0; y < s_art[bg].h && y < 512; y++)
         for (int i = 0; i < 16; i++)
-            if (x0 + i >= 0 && x0 + i < s_art[bg].w) px[y * 16 + i] = s_art[bg].png[y * s_art[bg].w + x0 + i];
-    return px;
+            if (x0 + i >= 0 && x0 + i < s_art[bg].w) any |= px[y * 16 + i] = s_art[bg].png[y * s_art[bg].w + x0 + i];
+    /* A column the art leaves empty (the picture itself, where a screen
+     * shows it shifted) falls back to the copies' other methods. */
+    s_cols[s_ncols - 1].empty = !any;
+    return any ? px : NULL;
 }
 #else
 static const uint8_t *art_column(int bg, int x) { (void)bg; (void)x; return NULL; }
@@ -231,6 +246,9 @@ static int extend(const uint16_t *vram, int screen_w, ng_extra_sprite_t *out, in
         for (size_t i = 0; i < N_BACKGROUNDS; i++)
             if (k_backgrounds[i].tile == t) bg = (int)i;
         if (bg < 0) continue;
+        /* A layer that is a plain band only when every column shows the
+         * same tiles (it also carries panels that slide in from the edge). */
+        if (k_backgrounds[bg].bands && !same_columns(vram, s + a, s + b, srows[s])) continue;
         int period = k_backgrounds[bg].period, colour = k_backgrounds[bg].colour;
         uint16_t pal = vram[(s + a) * 64 + 1] >> 8;
         for (int c = 1; 16 * (a - c) + 16 > -margin && n_out < max; c++) {

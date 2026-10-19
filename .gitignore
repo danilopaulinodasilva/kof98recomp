@@ -43,8 +43,6 @@ CMakeUserPresets.json
 # Your ROM files, and everything derived from them: the recompiled C
 # (written to build/generated) and runtime entry-point lists. Never commit.
 roms/
-# Widescreen art of the user's own, derived from the game's (docs/game-notes.md)
-assets/
 generated/
 entries*.txt
 *.mp4

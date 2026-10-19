@@ -7,6 +7,18 @@
 - **Script more modes** (versus, survivor, practice, the boss fight) into the soak and the profile, so their runtime-only code runs natively and `--verify` covers them.
 - **Widescreen outside fights**: the intro's text collages and illustrations narrower than the screen still have black margins; decide what they show, possibly with more art in `assets/`.
 
+## Launcher and video options
+
+A start screen, before the game boots, to set things up without the command line:
+
+- **Display**: 4:3 or widescreen, integer scaling, fullscreen or window, which monitor, vsync.
+- **Filters**: CRT scanlines, shadow mask or aperture grille, screen curvature, bloom and glow, and the smoother scalers (xBR, hqx), as shaders, so they cost almost nothing.
+- **Colour**: brightness, gamma and saturation, and a "PVM" preset.
+- **Input**: key and gamepad mapping for both players, turbo and macros off by default.
+- **Game**: region (Japan, US, Europe system ROMs), difficulty and the other options the game's own menu has, and a soft reset.
+- **Recording**: screenshots and clips with a key, and the `--record` options.
+- **Quality of life**: save states, fast-forward, a frame counter and input display for practice, and remembering the last settings.
+
 ## The rest of the series
 
 One repo per game, on the same toolkit:

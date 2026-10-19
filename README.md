@@ -13,14 +13,19 @@ This is the first step of a bigger plan: bring the whole KOF series, from '94 to
 
 ## Screenshots
 
-All real output from the recompiled build in widescreen (`--widescreen --headless --screenshot`). The stone behind the menus uses margin art from `assets/` ([below](#widescreen-art)).
+The same frames from the recompiled build, as the original 4:3 picture and in widescreen (`--headless --screenshot`, with and without `--widescreen`):
 
-| | |
+| Original (4:3) | Widescreen (16:9) |
 |---|---|
-| ![NEOGEO boot](docs/screenshots/bios.png) | ![Intro](docs/screenshots/intro.png) |
-| ![Title](docs/screenshots/title.png) | ![Mode select](docs/screenshots/mode.png) |
-| ![Character select](docs/screenshots/select.png) | ![Order select](docs/screenshots/order.png) |
-| ![Fight](docs/screenshots/fight.png) | ![Fight](docs/screenshots/fight-wide.png) |
+| ![NEOGEO boot](docs/screenshots/bios.png) | ![NEOGEO boot, widescreen](docs/screenshots/bios-wide.png) |
+| ![Intro](docs/screenshots/intro.png) | ![Intro, widescreen](docs/screenshots/intro-wide.png) |
+| ![Title](docs/screenshots/title.png) | ![Title, widescreen](docs/screenshots/title-wide.png) |
+| ![Mode select](docs/screenshots/mode.png) | ![Mode select, widescreen](docs/screenshots/mode-wide.png) |
+| ![Character select](docs/screenshots/select.png) | ![Character select, widescreen](docs/screenshots/select-wide.png) |
+| ![Order select](docs/screenshots/order.png) | ![Order select, widescreen](docs/screenshots/order-wide.png) |
+| ![Fight](docs/screenshots/fight.png) | ![Fight, widescreen](docs/screenshots/fight-wide.png) |
+
+The stone behind the title and the menus uses new margin art ([below](#widescreen-art)).
 
 ## Why
 
@@ -35,7 +40,7 @@ Alpha. **There is no sound yet.**
 - **Widescreen** (`--widescreen`, 400×224; up to 480 with `--width`):
   - fights draw the stage across the whole width, on all nine stages, with the camera kept inside the stage art;
   - menus and other backgrounds continue into the margins in the game's own graphics: mirrored textures, repeated patterns, gradients carried on in their edge colour;
-  - a background can take its margins from new art instead ([below](#widescreen-art)).
+  - the stone behind the menus and the title has new margin art ([below](#widescreen-art)).
 - Only player 1 has keys, and there is no gamepad support yet.
 
 ## What was done
@@ -150,9 +155,7 @@ See *Step by step* above. `KOF98_ROM_DIR` is the only game-specific option. With
 
 ## Widescreen art
 
-Mirroring works for most backgrounds, but it shows on the stone texture behind the menus. Those screens can take their margins from new art: put an indexed PNG at `assets/stone.png` (or point `KOF98_ASSETS` at another folder), 496×224, in the stone's 16-colour palette, with the original picture at X 80..399. The game draws it through its own palette, so it fades and dims with the screen. Without the file, the margins are mirrored. [docs/game-notes.md](docs/game-notes.md) has the details.
-
-The art is derived from the game's, so `assets/` is not committed, like `roms/`.
+Mirroring works for most backgrounds, but it shows on the stone textures behind the menus and the title. Those take their margins from new art, painted for this project, in `assets/`: indexed PNGs in each background's palette that hold only the margins. The game draws them through its own palette, so they fade and dim with the screen. To try your own, point `KOF98_ASSETS` at another folder. [docs/game-notes.md](docs/game-notes.md) has the formats.
 
 ## Documentation
 
@@ -162,7 +165,7 @@ The art is derived from the game's, so `assets/` is not committed, like `roms/`.
 
 ## Credits
 
-- **[Danilo P. da Silva](https://github.com/danilopaulinodasilva)**: the project, KOF98 and widescreen.
+- **[Danilo P. da Silva](https://github.com/danilopaulinodasilva)**: the project, KOF98, widescreen and its margin art.
 - **[sp00nznet](https://github.com/sp00nznet)**: [neogeorecomp](https://github.com/sp00nznet/neogeorecomp) and [metalslug](https://github.com/sp00nznet/metalslug), the toolkit and the template this builds on.
 - **[Claude Code](https://claude.com/claude-code)** (Anthropic): AI pair programmer for the reverse engineering, the toolkit changes and the widescreen work. Every change was tested by Danilo before it was pushed.
 - Third-party code in the toolkit: [Musashi](https://github.com/kstenerud/Musashi) (68000 interpreter and `--verify` oracle), [z80](https://github.com/superzazu/z80) (sound CPU), [stb_image](https://github.com/nothings/stb) (PNG decoding).
