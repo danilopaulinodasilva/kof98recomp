@@ -4,7 +4,6 @@
 
 - **The boss fight** in the profile: reaching it means a script that wins every match against the CPU.
 - **Remappable keys and buttons**, with the launcher.
-- **Widescreen outside fights**: the intro's text collages and illustrations narrower than the screen still have black margins; decide what they show, possibly with more art in `assets/`.
 
 ## Launcher and video options
 
