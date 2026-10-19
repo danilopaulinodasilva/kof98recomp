@@ -4,6 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-19
+
+First release, alpha: source only. Build it with your own `kof98h` and `neogeo` dumps (README).
+
 ### Added
 - The pause menu (from neogeorecomp): Esc for volume, fullscreen, scanlines, 4:3 or 16:9, both players' keys, reset and quit.
 - Player 2 and gamepads (from neogeorecomp).
