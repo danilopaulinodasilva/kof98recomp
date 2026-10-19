@@ -2,7 +2,6 @@
 
 ## Next
 
-- **Sound**: YM2610 synthesis in neogeorecomp. Nothing in this repo should need to change.
 - **Player 2 keys, gamepad input** and remappable keys (toolkit frontend).
 - **Script more modes** (versus, survivor, practice, the boss fight) into the soak and the profile, so their runtime-only code runs natively and `--verify` covers them.
 - **Widescreen outside fights**: the intro's text collages and illustrations narrower than the screen still have black margins; decide what they show, possibly with more art in `assets/`.

@@ -28,7 +28,7 @@ KOF98 is one of the best fighting games ever made, and it still runs, at best, i
 
 ## Status
 
-Alpha. **There is no sound yet.**
+Alpha, with sound.
 
 - Boots as an AES console, plays the intro, attract demos and team matches against the CPU, on recompiled code. The only interpreted code is a routine the game copies to RAM and runs once at boot.
 - `--verify` replays every recompiled block in the Musashi interpreter: **0 mismatches** over 12.1M blocks of a 5-minute scripted session, and 11.7M in widescreen.
@@ -53,8 +53,8 @@ KOF98 runs on [neogeorecomp](https://github.com/danilopaulinodasilva/neogeorecom
 
 ## Roadmap
 
-1. **Sound**: YM2610 synthesis in the toolkit. The Z80 sound driver already runs, it just isn't heard.
-2. **Player 2**, gamepads and remappable keys.
+1. **Player 2**, gamepads and remappable keys.
+2. **A launcher** with display, filter and game options, and unlocking every character ([ROADMAP.md](ROADMAP.md)).
 3. **More of KOF98 covered**: script versus, survivor, practice and the boss fight into the test sessions, so their code runs natively and is verified.
 4. **The rest of the series**, one repo per game, the same way:
    - **KOF '94 to '97** first: they are unencrypted and close to '98, so they are expected to need mostly their ROM layout and their own widescreen patches;
@@ -68,7 +68,7 @@ This is a hobby project and help is very welcome. Useful things, roughly from ea
 
 - **Play it and report problems**: what you did, what you expected, a screenshot or a `--record` clip. A scripted input file plus a frame number reproduces a run exactly.
 - **Test the build on Windows and Linux**, especially `Setup.cmd`.
-- **Sound**: YM2610 emulation in neogeorecomp is the biggest missing piece.
+- **The launcher**: video filters, input mapping and the options in [ROADMAP.md](ROADMAP.md).
 - **Reverse engineering** for the next games: ROM layouts, protection, and the background routines widescreen has to patch.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before sending code.
@@ -160,10 +160,10 @@ Mirroring works for most backgrounds, but it shows on the stone textures behind 
 
 ## Credits
 
-- **[Danilo P. da Silva](https://github.com/danilopaulinodasilva)**: the project, KOF98, widescreen and its margin art.
+- **[Danilo P. da Silva](https://github.com/danilopaulinodasilva)**: the project, KOF98, widescreen and its margin art, and sound in the toolkit.
 - **[sp00nznet](https://github.com/sp00nznet)**: [neogeorecomp](https://github.com/sp00nznet/neogeorecomp) and [metalslug](https://github.com/sp00nznet/metalslug), the toolkit and the template this builds on.
 - **[Claude Code](https://claude.com/claude-code)** (Anthropic): AI pair programmer for the reverse engineering, the toolkit changes and the widescreen work. Every change was tested by Danilo before it was pushed.
-- Third-party code in the toolkit: [Musashi](https://github.com/kstenerud/Musashi) (68000 interpreter and `--verify` oracle), [z80](https://github.com/superzazu/z80) (sound CPU), [stb_image](https://github.com/nothings/stb) (PNG decoding).
+- Third-party code in the toolkit: [Musashi](https://github.com/kstenerud/Musashi) (68000 interpreter and `--verify` oracle), [z80](https://github.com/superzazu/z80) (sound CPU), [ymfm](https://github.com/aaronsgiles/ymfm) (YM2610 sound synthesis), [stb_image](https://github.com/nothings/stb) (PNG decoding).
 - MAME's documentation of the hardware and of the ROM sets, used for reference only.
 
 ## License

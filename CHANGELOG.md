@@ -5,6 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 ## [Unreleased]
 
 ### Added
+- Sound, from neogeorecomp's YM2610 synthesis: music, voices and effects.
 - The King of Fighters '98 (MAME set `kof98h`, the AES cart) on neogeorecomp: AES boot, intro, attract demos and team matches, running on recompiled 68000 code. It needs neogeorecomp's multi-bank P ROM support and AES mode.
 - Widescreen (`--widescreen`): fights draw the stage 400 pixels wide, by patching the background column ranges and the camera range at load time; the profile pass also plays the soak in widescreen. Menus and other backgrounds continue into the margins, mirrored, repeated or in their edge colour (`ng_game_t.extend`), the character select in its edge colour, letterbox bars while they are plain bands, and the stone behind the menus and the title from new margin art in `assets/`.
 - `kof98_recomp`, the generator that recompiles the user's own ROMs into `build/generated` at build time (`KOF98_ROM_DIR`).

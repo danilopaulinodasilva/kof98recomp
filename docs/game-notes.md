@@ -59,5 +59,4 @@ End state, with the profile pass (which plays attract and the soak in widescreen
 
 ## Not yet
 
-- **Sound**: the Z80 driver runs, but the YM2610 is silent (neogeorecomp ROADMAP).
 - **Coverage**: the soak plays team matches against the CPU with player 1. Other modes (versus, survivor, practice, the boss) have not been scripted yet; any runtime-only code they reach runs in the interpreter until profiled.
