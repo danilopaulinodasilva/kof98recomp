@@ -62,6 +62,7 @@ if(KOF98_ROM_DIR)
     # show up at runtime (computed jumps into unrolled code), then rebuild.
     add_custom_target(profile
         COMMAND kof98 --headless --rom-path ${KOF98_ROM_DIR} --frames 60000 --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --widescreen --rom-path ${KOF98_ROM_DIR} --frames 60000 --dump-misses ${KOF98_ENTRIES}
         COMMAND kof98 --headless --rom-path ${KOF98_ROM_DIR} --frames 19000
                 --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/play_long.txt --dump-misses ${KOF98_ENTRIES}
         COMMAND kof98 --headless --widescreen --rom-path ${KOF98_ROM_DIR} --frames 19000

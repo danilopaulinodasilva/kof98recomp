@@ -90,6 +90,86 @@ static void patch(uint8_t *prom, size_t size, int screen_w) {
     }
 }
 
+/* Screens other than fights are drawn for 320 pixels. A background that
+ * fills one is 20 columns of 16 pixels at X 0..304, so the margins get
+ * more of it, as copies of its columns: mirrored at each edge, which
+ * continues textures and gradients without a seam, or repeated with the
+ * period of a pattern that mirroring would turn backwards. Only the
+ * backgrounds listed are extended, known by their first tile: mirrored
+ * text or a panel sliding in from the edge would look wrong. */
+static const struct { uint32_t tile; int period; } k_backgrounds[] = {
+    {0x07416, 0},  {0x07417, 0},  {0x07425, 0},   /* stone: menus, ranking, continue */
+    {0x0787E, 0},                                  /* character select: blue to red */
+    {0x07824, 10},                                 /* and its "K.O.F." lettering */
+    {0x097B6, 0},                                  /* title logo */
+    {0x094FC, 0}, {0x09B72, 0}, {0x0D23F, 0}, {0x0D526, 0},   /* intro */
+    {0x08DD0, 0}, {0x08EE8, 0},                    /* team story */
+    {0x0E15F, 0}, {0x0E1A7, 0}, {0x0E1F3, 0}, {0x0E237, 0}, {0x0E273, 0},
+    {0x0E29B, 0}, {0x0E2C3, 0}, {0x0E2D7, 0}, {0x0E2EB, 0},   /* continue countdown */
+    {0x07612, 0},                                  /* the white flash of a K.O. */
+};
+
+static uint32_t first_tile(const uint16_t *vram, int n, int rows) {
+    if (rows > 32) rows = 32;
+    for (int i = 0; i < rows; i++) {
+        uint32_t code = vram[n * 64 + i * 2] | (((uint32_t)vram[n * 64 + i * 2 + 1] << 12) & 0xF0000u);
+        if (code) return code;
+    }
+    return 0;
+}
+
+static int extend(const uint16_t *vram, int screen_w, ng_extra_sprite_t *out, int max) {
+    int sx[381], sy[381], srows[381], full[381];
+    int x = 0, y = 0, rows = 0, zoom_x = 0, n_out = 0;
+    int margin = (screen_w - 320) / 2;
+    for (int n = 0; n < 381; n++) {
+        uint16_t ctl = vram[0x8200 + n], zoom = vram[0x8000 + n];
+        if (ctl & 0x40) {
+            x = (x + zoom_x + 1) & 0x1FF;
+        } else {
+            y = ctl >> 7;
+            x = vram[0x8400 + n] >> 7;
+            rows = ctl & 0x3F;
+        }
+        zoom_x = (zoom >> 8) & 0x0F;
+        sx[n] = x; sy[n] = y; srows[n] = rows; full[n] = zoom_x == 15;
+    }
+    for (int s = 0; s + 20 <= 381; s++) {
+        if (sx[s] != 0 || srows[s] == 0 || !full[s]) continue;
+        int k = 1;
+        while (k < 20 && sx[s + k] == 16 * k && sy[s + k] == sy[s] && srows[s + k] == srows[s] && full[s + k]) k++;
+        if (k < 20) continue;
+        /* A layer that already reaches into the margins (a fight's stage). */
+        if ((s > 0 && sx[s - 1] == 496 && srows[s - 1] && sy[s - 1] == sy[s]) ||
+            (s + 20 < 381 && sx[s + 20] == 320 && srows[s + 20] && sy[s + 20] == sy[s])) continue;
+        /* Art may leave an edge column empty, for the overscan to hide:
+         * the picture's edge is then the next column in. */
+        int a = 0, b = 19;
+        while (a < b && !first_tile(vram, s + a, srows[s])) a++;
+        while (b > a && !first_tile(vram, s + b, srows[s])) b--;
+        if (a > 2 || b < 17) continue;
+        uint32_t t = first_tile(vram, s + a, srows[s]);
+        int period = -1;
+        for (size_t i = 0; i < sizeof(k_backgrounds) / sizeof(k_backgrounds[0]); i++)
+            if (k_backgrounds[i].tile == t) period = k_backgrounds[i].period;
+        if (period < 0) continue;
+        for (int c = 1; 16 * (a - c) + 16 > -margin && n_out < max; c++) {
+            ng_extra_sprite_t *e = &out[n_out++];
+            e->x = (uint16_t)((16 * (a - c)) & 0x1FF);
+            if (period >= c) { e->slot = (uint16_t)(s + a + period - c); e->flip = 0; }
+            else             { e->slot = (uint16_t)(s + a + c - 1);      e->flip = 1; }
+        }
+        for (int c = 1; 16 * (b + c) < 320 + margin && n_out < max; c++) {
+            ng_extra_sprite_t *e = &out[n_out++];
+            e->x = (uint16_t)((16 * (b + c)) & 0x1FF);
+            if (period >= c) { e->slot = (uint16_t)(s + b - period + c); e->flip = 0; }
+            else             { e->slot = (uint16_t)(s + b - c + 1);      e->flip = 1; }
+        }
+        s += 19;
+    }
+    return n_out;
+}
+
 /* MAME set "kof98h", the unencrypted AES dump, plus the AES system ROM
  * neo-po.bin from the "neogeo" set. The 1 MB P1 is the fixed
  * $000000 area; the 4 MB P2 holds four banks for $200000. Both are stored
@@ -118,4 +198,5 @@ const ng_game_t k_kof98 = {
     .aes = 1,
     .patch = patch,
     .live_words = k_live_words,
+    .extend = extend,
 };

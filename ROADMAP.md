@@ -2,7 +2,7 @@
 
 ## Next
 
-- **Widescreen outside fights**: extend the screens with patterned backgrounds (character select, mode select) using the game's own tiles; decide what illustrated screens (title, intro, win poses) show in the margins.
+- **Widescreen outside fights**: the intro's text collages and illustrations narrower than the screen still have black margins; decide what they show.
 - **Sound**, once neogeorecomp has YM2610 synthesis. Nothing in this repo should need to change.
 - **Script more modes** (versus, survivor, practice, the boss fight) into the soak and the profile, so their runtime-only code runs natively and `--verify` covers them.
 - **Player 2 keys, gamepad input** and remappable keys (toolkit frontend).

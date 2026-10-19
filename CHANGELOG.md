@@ -6,7 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ### Added
 - The King of Fighters '98 (MAME set `kof98h`, the AES cart) on neogeorecomp: AES boot, intro, attract demos and team matches, running on recompiled 68000 code. It needs neogeorecomp's multi-bank P ROM support and AES mode.
-- Widescreen (`--widescreen`): fights draw the stage 400 pixels wide, by patching the background column ranges and the camera range at load time; the profile pass also plays the soak in widescreen.
+- Widescreen (`--widescreen`): fights draw the stage 400 pixels wide, by patching the background column ranges and the camera range at load time; the profile pass also plays the soak in widescreen. Menus and other backgrounds continue into the margins, mirrored or repeated (`ng_game_t.extend`).
 - `kof98_recomp`, the generator that recompiles the user's own ROMs into `build/generated` at build time (`KOF98_ROM_DIR`).
 - `tests/start_fight.txt` (reach the first round) and `tests/play_long.txt` (5-minute soak), which the `profile` target plays.
 - `Setup.cmd` / `setup.sh` find and checksum the `kof98h` and `neogeo` sets and write a KOF98 launcher.
