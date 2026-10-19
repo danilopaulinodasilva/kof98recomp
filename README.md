@@ -11,6 +11,17 @@ This is the first step of a bigger plan: bring the whole KOF series, from '94 to
   <img src="docs/screenshots/select-wide.png" alt="The character select in widescreen" width="600">
 </p>
 
+## Screenshots
+
+All real output from the recompiled build in widescreen (`--widescreen --headless --screenshot`). The stone behind the menus uses margin art from `assets/` ([below](#widescreen-art)).
+
+| | |
+|---|---|
+| ![NEOGEO boot](docs/screenshots/bios.png) | ![Intro](docs/screenshots/intro.png) |
+| ![Title](docs/screenshots/title.png) | ![Mode select](docs/screenshots/mode.png) |
+| ![Character select](docs/screenshots/select.png) | ![Order select](docs/screenshots/order.png) |
+| ![Fight](docs/screenshots/fight.png) | ![Fight](docs/screenshots/fight-wide.png) |
+
 ## Why
 
 KOF98 is one of the best fighting games ever made, and it still runs, at best, inside an emulator built for a 4:3 CRT. A static recompilation turns the game into a regular program: it can be changed, fixed and extended like any other code, while every recompiled block is checked against an interpreter so it stays faithful to the original. Widescreen was the first thing that needed it.
