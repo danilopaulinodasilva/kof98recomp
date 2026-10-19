@@ -16,6 +16,7 @@ A start screen, before the game boots, to set things up without the command line
 - **Colour**: brightness, gamma and saturation, and a "PVM" preset.
 - **Input**: key and gamepad mapping for both players, turbo and macros off by default.
 - **Game**: region (Japan, US, Europe system ROMs), difficulty and the other options the game's own menu has, and a soft reset.
+- **Unlock all characters**: the hidden fighters (the Orochi versions, Omega Rugal and the EX versions) available from the start, without the code at the character select. It means finding the flag the code sets and setting it at boot.
 - **Recording**: screenshots and clips with a key, and the `--record` options.
 - **Quality of life**: save states, fast-forward, a frame counter and input display for practice, and remembering the last settings.
 
