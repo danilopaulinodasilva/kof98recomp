@@ -16,7 +16,7 @@ Real output from the recompiled build, in widescreen (`--widescreen --headless -
 
 | | |
 |---|---|
-| ![Intro](docs/screenshots/intro.png) | ![Title](docs/screenshots/title.png) |
+| ![Intro](docs/screenshots/intro.png) | ![Title](docs/screenshots/title-screen.png) |
 | ![Mode select](docs/screenshots/mode.png) | ![Character select](docs/screenshots/select.png) |
 | ![Order select](docs/screenshots/order.png) | ![Fight](docs/screenshots/fight-hit.png) |
 
