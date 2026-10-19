@@ -55,6 +55,8 @@ if(KOF98_ROM_DIR)
 endif()
 
 add_executable(kof98 ${GAME_SOURCES} src/game.c)
+# Art of the user's own for widescreen margins (docs/game-notes.md).
+target_compile_definitions(kof98 PRIVATE KOF98_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
 target_link_libraries(kof98 PRIVATE neogeorecomp)
 target_include_directories(kof98 PRIVATE src ${GEN_DIR})
 if(KOF98_ROM_DIR)

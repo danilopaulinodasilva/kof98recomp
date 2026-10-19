@@ -4,6 +4,8 @@
  */
 #include "game.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Widescreen. Stage backgrounds are layers of 32 sprite columns (a 512
  * pixel ring); the game streams tiles into the columns near the camera
@@ -93,21 +95,82 @@ static void patch(uint8_t *prom, size_t size, int screen_w) {
 /* Screens other than fights are drawn for 320 pixels. A background that
  * fills one is 20 columns of 16 pixels at X 0..304, so the margins get
  * more of it, as copies of its columns: mirrored at each edge, which
- * continues textures and gradients without a seam, or repeated with the
- * period of a pattern that mirroring would turn backwards. Only the
- * backgrounds listed are extended, known by their first tile: mirrored
- * text or a panel sliding in from the edge would look wrong. */
-static const struct { uint32_t tile; int period; } k_backgrounds[] = {
-    {0x07416, 0},  {0x07417, 0},  {0x07425, 0},   /* stone: menus, ranking, continue */
-    {0x0787E, 0},                                  /* character select: blue to red */
-    {0x07824, 10},                                 /* and its "K.O.F." lettering */
-    {0x097B6, 0},                                  /* title logo */
-    {0x094FC, 0}, {0x09B72, 0}, {0x0D23F, 0}, {0x0D526, 0},   /* intro */
-    {0x08DD0, 0}, {0x08EE8, 0},                    /* team story */
-    {0x0E15F, 0}, {0x0E1A7, 0}, {0x0E1F3, 0}, {0x0E237, 0}, {0x0E273, 0},
-    {0x0E29B, 0}, {0x0E2C3, 0}, {0x0E2D7, 0}, {0x0E2EB, 0},   /* continue countdown */
-    {0x07612, 0},                                  /* the white flash of a K.O. */
+ * continues textures without a seam, or repeated with the period of a
+ * pattern that mirroring would turn backwards. Only the backgrounds
+ * listed are extended, known by their first tile: mirrored text or a
+ * panel sliding in from the edge would look wrong.
+ *
+ * The character select's gradient and lettering pick their colour by
+ * position: palette index 1 at the outer edge, rising toward the middle.
+ * Their copies are drawn in index 1 alone, so the gradient carries on
+ * from the edge and copied letters keep the edge's colour. Index 1 also
+ * fills the 8 pixels the overscan used to hide.
+ *
+ * A background can instead take its margins from art of the user's own:
+ * an indexed PNG in the asset folder (KOF98_ASSETS, default assets/ in
+ * the repo), painted in the background's palette, which the copies draw
+ * through palette RAM so it fades with the screen. `art_x` is where the
+ * background's X 0 falls in the image. Without the file, the margins are
+ * mirrored. */
+static const struct { uint32_t tile; int period, colour; const char *art; int art_x; } k_backgrounds[] = {
+    {0x07417, 0, 0, "stone.png", 80},                      /* stone: how to play, ranking */
+    {0x07425, 0, 0, "stone.png", 96},                      /* the same 16 pixels on: mode select */
+    {0x07416, 0, 0, NULL, 0},                              /* continue */
+    {0x0787E, 0, 1, NULL, 0},                              /* character select: blue to red */
+    {0x07824, 10, 1, NULL, 0},                             /* and its "K.O.F." lettering */
+    {0x097B6, 0, 0, NULL, 0},                              /* title logo */
+    {0x094FC, 0, 0, NULL, 0}, {0x09B72, 0, 0, NULL, 0},    /* intro */
+    {0x0D23F, 0, 0, NULL, 0}, {0x0D526, 0, 0, NULL, 0},
+    {0x08DD0, 0, 0, NULL, 0}, {0x08EE8, 0, 0, NULL, 0},    /* team story */
+    {0x0E15F, 0, 0, NULL, 0}, {0x0E1A7, 0, 0, NULL, 0}, {0x0E1F3, 0, 0, NULL, 0},   /* continue countdown */
+    {0x0E237, 0, 0, NULL, 0}, {0x0E273, 0, 0, NULL, 0}, {0x0E29B, 0, 0, NULL, 0},
+    {0x0E2C3, 0, 0, NULL, 0}, {0x0E2D7, 0, 0, NULL, 0}, {0x0E2EB, 0, 0, NULL, 0},
+    {0x07612, 0, 0, NULL, 0},                              /* the white flash of a K.O. */
 };
+#define N_BACKGROUNDS (sizeof(k_backgrounds) / sizeof(k_backgrounds[0]))
+
+#ifdef KOF98_ASSET_DIR
+/* Loaded art, and the 16-pixel columns cut from it (16 indices per line,
+ * 512 lines), made once per background and X. */
+static struct { uint8_t *png; int w, h, tried; } s_art[N_BACKGROUNDS];
+static struct { int bg, x; uint8_t px[16 * 512]; } *s_cols;
+static int s_ncols;
+
+static const uint8_t *art_column(int bg, int x) {
+    if (!s_art[bg].tried) {
+        s_art[bg].tried = 1;
+        for (size_t i = 0; i < (size_t)bg; i++)   /* backgrounds sharing a file share the load */
+            if (k_backgrounds[i].art && !strcmp(k_backgrounds[i].art, k_backgrounds[bg].art) && s_art[i].png) {
+                s_art[bg] = s_art[i];
+                break;
+            }
+        if (!s_art[bg].png) {
+            const char *dir = getenv("KOF98_ASSETS") ? getenv("KOF98_ASSETS") : KOF98_ASSET_DIR;
+            char path[1024];
+            snprintf(path, sizeof(path), "%s/%s", dir, k_backgrounds[bg].art);
+            FILE *f = fopen(path, "rb");
+            if (f) {
+                fclose(f);
+                s_art[bg].png = ng_read_indexed_png(path, &s_art[bg].w, &s_art[bg].h);
+            }
+        }
+    }
+    if (!s_art[bg].png) return NULL;
+    for (int i = 0; i < s_ncols; i++)
+        if (s_cols[i].bg == bg && s_cols[i].x == x) return s_cols[i].px;
+    s_cols = realloc(s_cols, sizeof(*s_cols) * (size_t)(s_ncols + 1));
+    uint8_t *px = s_cols[s_ncols].px;
+    s_cols[s_ncols].bg = bg; s_cols[s_ncols].x = x; s_ncols++;
+    memset(px, 0, 16 * 512);
+    int x0 = k_backgrounds[bg].art_x + x;
+    for (int y = 0; y < s_art[bg].h && y < 512; y++)
+        for (int i = 0; i < 16; i++)
+            if (x0 + i >= 0 && x0 + i < s_art[bg].w) px[y * 16 + i] = s_art[bg].png[y * s_art[bg].w + x0 + i] & 15;
+    return px;
+}
+#else
+static const uint8_t *art_column(int bg, int x) { (void)bg; (void)x; return NULL; }
+#endif
 
 static uint32_t first_tile(const uint16_t *vram, int n, int rows) {
     if (rows > 32) rows = 32;
@@ -149,19 +212,33 @@ static int extend(const uint16_t *vram, int screen_w, ng_extra_sprite_t *out, in
         while (b > a && !first_tile(vram, s + b, srows[s])) b--;
         if (a > 2 || b < 17) continue;
         uint32_t t = first_tile(vram, s + a, srows[s]);
-        int period = -1;
-        for (size_t i = 0; i < sizeof(k_backgrounds) / sizeof(k_backgrounds[0]); i++)
-            if (k_backgrounds[i].tile == t) period = k_backgrounds[i].period;
-        if (period < 0) continue;
+        int bg = -1;
+        for (size_t i = 0; i < N_BACKGROUNDS; i++)
+            if (k_backgrounds[i].tile == t) bg = (int)i;
+        if (bg < 0) continue;
+        int period = k_backgrounds[bg].period, colour = k_backgrounds[bg].colour;
+        uint16_t pal = vram[(s + a) * 64 + 1] >> 8;
         for (int c = 1; 16 * (a - c) + 16 > -margin && n_out < max; c++) {
             ng_extra_sprite_t *e = &out[n_out++];
+            *e = (ng_extra_sprite_t){0};
+            e->colour = (uint8_t)colour;
             e->x = (uint16_t)((16 * (a - c)) & 0x1FF);
+            if (k_backgrounds[bg].art && (e->art = art_column(bg, 16 * (a - c)))) {
+                e->slot = (uint16_t)(s + a); e->pal = pal;
+                continue;
+            }
             if (period >= c) { e->slot = (uint16_t)(s + a + period - c); e->flip = 0; }
             else             { e->slot = (uint16_t)(s + a + c - 1);      e->flip = 1; }
         }
         for (int c = 1; 16 * (b + c) < 320 + margin && n_out < max; c++) {
             ng_extra_sprite_t *e = &out[n_out++];
+            *e = (ng_extra_sprite_t){0};
+            e->colour = (uint8_t)colour;
             e->x = (uint16_t)((16 * (b + c)) & 0x1FF);
+            if (k_backgrounds[bg].art && (e->art = art_column(bg, 16 * (b + c)))) {
+                e->slot = (uint16_t)(s + a); e->pal = pal;
+                continue;
+            }
             if (period >= c) { e->slot = (uint16_t)(s + b - period + c); e->flip = 0; }
             else             { e->slot = (uint16_t)(s + b - c + 1);      e->flip = 1; }
         }
