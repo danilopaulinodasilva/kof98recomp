@@ -4,9 +4,9 @@ Bug reports from playing are the most useful thing right now: what you did, what
 
 ## Pull requests
 
-- Most fixes belong in [neogeorecomp](https://github.com/sp00nznet/neogeorecomp): this repo describes the ROM set and holds test scripts. Nothing game-specific goes into the toolkit, and nothing hardware-specific goes here.
+- Most fixes belong in the toolkit, [neogeorecomp](https://github.com/danilopaulinodasilva/neogeorecomp) (this project's fork of sp00nznet's): this repo describes the ROM set, the widescreen patches and the test scripts. Nothing game-specific goes into the toolkit, and nothing hardware-specific goes here.
 - Run `kof98 --headless --verify` with the scripts in `tests/` and include the `[verify]` line.
-- **Never include ROMs, the recompiled C from `build/generated`, entry-point lists, or disassembly.** Everything derived from the game stays on your machine.
+- **Never include ROMs, the recompiled C from `build/generated`, entry-point lists, disassembly, or art derived from the game's (`assets/`).** Everything derived from the game stays on your machine.
 
 ## Where your code comes from
 

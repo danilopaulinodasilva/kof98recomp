@@ -1,39 +1,72 @@
-# The King of Fighters '98: static recompilation
+# KOF98 Recomp
 
-**The King of Fighters '98 (SNK, 1998) running as a native PC program: its 68000 code is recompiled to C and runs on the [neogeorecomp](https://github.com/sp00nznet/neogeorecomp) board model.**
+**The King of Fighters '98 running as a native PC program, in widescreen.** The game's 68000 code is statically recompiled to C and runs natively on a model of the Neo Geo hardware.
 
-The toolkit does all the work; this repo describes the ROM set and builds the game. It started as a fork of [metalslug](https://github.com/sp00nznet/metalslug), the toolkit's reference game.
+This is the first step of a bigger plan: bring the whole KOF series, from '94 to 2003, to the same treatment.
 
-> **No game data here.** You need your own KOF98 and Neo Geo system ROM dumps (MAME sets `kof98h` and `neogeo`). The recompiled C is generated from your dump on your machine, into `build/`. It is never committed or distributed, and neither is anything else derived from the ROMs.
+> **No game data here.** You need your own dumps of the game and the Neo Geo system ROM (MAME sets `kof98h` and `neogeo`). The recompiled C is generated from your dump, on your machine, at build time. It is never committed or distributed, and neither is anything else derived from the ROMs.
+
+<p align="center">
+  <img src="docs/screenshots/fight-wide.png" alt="A fight in widescreen" width="600"><br>
+  <img src="docs/screenshots/select-wide.png" alt="The character select in widescreen" width="600">
+</p>
+
+## Why
+
+KOF98 is one of the best fighting games ever made, and it still runs, at best, inside an emulator built for a 4:3 CRT. A static recompilation turns the game into a regular program: it can be changed, fixed and extended like any other code, while every recompiled block is checked against an interpreter so it stays faithful to the original. Widescreen was the first thing that needed it.
 
 ## Status
 
-**v0.1.0-dev, alpha.** KOF98 boots, runs the intro and attract demos, and plays team matches on recompiled code. **There is no sound yet.**
+Alpha. **There is no sound yet.**
 
-- Runs as an AES console with the Japanese AES system ROM (`neo-po.bin`): the AES cart refuses to run on an MVS board ([docs/game-notes.md](docs/game-notes.md)).
-- The 5 MB program is banked: the four 1 MB banks behind `$200000` are recompiled separately and dispatched by the bank that is mapped.
-- **Widescreen** (`--widescreen`, 400×224): fights draw the stage across the whole width, and menus, the character select and other backgrounds continue into the margins in their own graphics.
-- A 5-minute scripted soak runs natively after the profile pass, apart from a routine the game runs from work RAM at boot. `--verify` checks **12.1M** recompiled blocks (11.7M in widescreen) against the Musashi interpreter with **0 mismatches**.
-- Not yet: sound, player 2 keys, gamepad support, and a settings menu.
+- Boots as an AES console, plays the intro, attract demos and team matches against the CPU, on recompiled code. The only interpreted code is a routine the game copies to RAM and runs once at boot.
+- `--verify` replays every recompiled block in the Musashi interpreter: **0 mismatches** over 12.1M blocks of a 5-minute scripted session, and 11.7M in widescreen.
+- **Widescreen** (`--widescreen`, 400×224; up to 480 with `--width`):
+  - fights draw the stage across the whole width, on all nine stages, with the camera kept inside the stage art;
+  - menus and other backgrounds continue into the margins in the game's own graphics: mirrored textures, repeated patterns, gradients carried on in their edge colour;
+  - a background can take its margins from new art instead ([below](#widescreen-art)).
+- Only player 1 has keys, and there is no gamepad support yet.
 
-## Screenshots
+## What was done
 
-All real output from the recompiled build (`--headless --screenshot`):
+KOF98 runs on [neogeorecomp](https://github.com/danilopaulinodasilva/neogeorecomp), a static recompilation toolkit for the Neo Geo by [sp00nznet](https://github.com/sp00nznet/neogeorecomp). This repo started as a fork of [metalslug](https://github.com/sp00nznet/metalslug), its reference game. Bringing up KOF98 took:
 
-| | |
-|---|---|
-| ![AES boot](docs/screenshots/bios.png) | ![Intro](docs/screenshots/intro.png) |
-| ![Title](docs/screenshots/title.png) | ![Mode select](docs/screenshots/mode.png) |
-| ![Team select](docs/screenshots/select.png) | ![Order select](docs/screenshots/order.png) |
-| ![Fight](docs/screenshots/fight.png) | |
+- **Banked program ROMs** in the toolkit: KOF98's program is 5 MB, with four 1 MB banks it switches between at runtime. Each bank is recompiled in its own context and dispatched by the bank that is mapped.
+- **AES mode**: the AES cartridge refuses to run on an arcade (MVS) board, so it runs as the home console.
+- **Widescreen**, which the hardware never had:
+  - the game streams stage tiles for a 320-pixel window; patching 42 immediate operands at load time widens it, and narrows the camera range so the view never leaves the stage;
+  - patched operands are read from memory by the recompiled code, so the same build runs at any width and `--verify` checks it;
+  - screens drawn at a fixed 320 pixels get their margins filled from copies of their own sprite columns, or from art loaded from disk.
 
-Widescreen (`--widescreen`):
+[docs/game-notes.md](docs/game-notes.md) has the details.
 
-![Widescreen fight](docs/screenshots/fight-wide.png)
+## Roadmap
+
+1. **Sound**: YM2610 synthesis in the toolkit. The Z80 sound driver already runs, it just isn't heard.
+2. **Player 2**, gamepads and remappable keys.
+3. **More of KOF98 covered**: script versus, survivor, practice and the boss fight into the test sessions, so their code runs natively and is verified.
+4. **The rest of the series**, one repo per game, the same way:
+   - **KOF '94 to '97** first: they are unencrypted and close to '98, so they are expected to need mostly their ROM layout and their own widescreen patches;
+   - then **KOF '99 to 2003**, which use encryption and protection chips, so the toolkit has to learn each scheme first.
+
+[ROADMAP.md](ROADMAP.md) has the smaller items.
+
+## Help wanted
+
+This is a hobby project and help is very welcome. Useful things, roughly from easiest:
+
+- **Play it and report problems**: what you did, what you expected, a screenshot or a `--record` clip. A scripted input file plus a frame number reproduces a run exactly.
+- **Test the build on Windows and Linux**, especially `Setup.cmd`.
+- **Sound**: YM2610 emulation in neogeorecomp is the biggest missing piece.
+- **Reverse engineering** for the next games: ROM layouts, protection, and the background routines widescreen has to patch.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) before sending code.
 
 ## Getting started
 
 ### Quick start (Windows)
+
+> The Windows setup was carried over from the toolkit's reference game and hasn't been tried with KOF98 yet. If it trips, the step-by-step commands below work, and an issue saying where it stopped helps.
 
 1. Download this repo: **Code → Download ZIP**, then unzip it. A `git clone` works too.
 2. Put your **`kof98h.zip`** and **`neogeo.zip`** (MAME sets) in the unzipped folder, or in `Downloads`.
@@ -104,11 +137,25 @@ The toolkit's [docs/running.md](https://github.com/sp00nznet/neogeorecomp/blob/m
 
 See *Step by step* above. `KOF98_ROM_DIR` is the only game-specific option. Without it, the build is interpreter-only, which is useful for working on the toolkit without regenerating.
 
+## Widescreen art
+
+Mirroring works for most backgrounds, but it shows on the stone texture behind the menus. Those screens can take their margins from new art: put an indexed PNG at `assets/stone.png` (or point `KOF98_ASSETS` at another folder), 496×224, in the stone's 16-colour palette, with the original picture at X 80..399. The game draws it through its own palette, so it fades and dims with the screen. Without the file, the margins are mirrored. [docs/game-notes.md](docs/game-notes.md) has the details.
+
+The art is derived from the game's, so `assets/` is not committed, like `roms/`.
+
 ## Documentation
 
-- [docs/game-notes.md](docs/game-notes.md): the ROM set and what the game needed from the toolkit
-- [neogeorecomp](https://github.com/sp00nznet/neogeorecomp): the architecture and recompiler docs
+- [docs/game-notes.md](docs/game-notes.md): the ROM set, what the game needed from the toolkit, and how widescreen works
+- [neogeorecomp](https://github.com/danilopaulinodasilva/neogeorecomp): the toolkit's architecture and recompiler docs
 - [CHANGELOG.md](CHANGELOG.md) · [ROADMAP.md](ROADMAP.md) · [CONTRIBUTING.md](CONTRIBUTING.md)
+
+## Credits
+
+- **[Danilo P. da Silva](https://github.com/danilopaulinodasilva)**: the project, KOF98 and widescreen.
+- **[sp00nznet](https://github.com/sp00nznet)**: [neogeorecomp](https://github.com/sp00nznet/neogeorecomp) and [metalslug](https://github.com/sp00nznet/metalslug), the toolkit and the template this builds on.
+- **[Claude Code](https://claude.com/claude-code)** (Anthropic): AI pair programmer for the reverse engineering, the toolkit changes and the widescreen work. Every change was tested by Danilo before it was pushed.
+- Third-party code in the toolkit: [Musashi](https://github.com/kstenerud/Musashi) (68000 interpreter and `--verify` oracle), [z80](https://github.com/superzazu/z80) (sound CPU), [stb_image](https://github.com/nothings/stb) (PNG decoding).
+- MAME's documentation of the hardware and of the ROM sets, used for reference only.
 
 ## License
 
