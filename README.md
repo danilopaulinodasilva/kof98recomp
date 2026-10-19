@@ -36,7 +36,7 @@ Alpha, with sound.
   - fights draw the stage across the whole width, on all nine stages, with the camera kept inside the stage art;
   - menus and other backgrounds continue into the margins in the game's own graphics: mirrored textures, repeated patterns, gradients carried on in their edge colour;
   - the stone behind the menus and the title has new margin art ([below](#widescreen-art)).
-- Only player 1 has keys, and there is no gamepad support yet.
+- Two players, on the keyboard or on gamepads.
 
 ## What was done
 
@@ -53,10 +53,9 @@ KOF98 runs on [neogeorecomp](https://github.com/danilopaulinodasilva/neogeorecom
 
 ## Roadmap
 
-1. **Player 2**, gamepads and remappable keys.
-2. **A launcher** with display, filter and game options, and unlocking every character ([ROADMAP.md](ROADMAP.md)).
-3. **More of KOF98 covered**: script versus, survivor, practice and the boss fight into the test sessions, so their code runs natively and is verified.
-4. **The rest of the series**, one repo per game, the same way:
+1. **A launcher** with display, filter and game options, remappable keys, and unlocking every character ([ROADMAP.md](ROADMAP.md)).
+2. **The boss fight in the test sessions**, so its code runs natively and is verified.
+3. **The rest of the series**, one repo per game, the same way:
    - **KOF '94 to '97** first: they are unencrypted and close to '98, so they are expected to need mostly their ROM layout and their own widescreen patches;
    - then **KOF '99 to 2003**, which use encryption and protection chips, so the toolkit has to learn each scheme first.
 
@@ -88,7 +87,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before sending code.
 
 **On Linux or macOS**, run `./setup.sh` instead, optionally with `--rom-zip PATH --bios-zip PATH`. It does the same steps and offers the `apt` command for anything missing. When it finishes, run `./kof98.sh`.
 
-Keys: **arrows** move, **Z X C V** buttons A B C D, **1** start, **Esc** quit. It runs as an AES, so there are no coins: press start on the title screen. Start pauses during a round. For widescreen, run `./kof98.sh --widescreen`.
+Keys: player 1 **arrows** and **Z X C V** (buttons A B C D), **1** start; player 2 **R F D G** and **A S Q W**, **2** start; **Esc** quit. Gamepads work too: the first one is player 1, the second player 2. It runs as an AES, so there are no coins: press start on the title screen. Start pauses during a round. For widescreen, run `./kof98.sh --widescreen`.
 
 ### Step by step
 
@@ -142,7 +141,7 @@ kof98 --headless --verify --frames 19000 --input tests/play_long.txt
 kof98 --headless --interp --frames 4400 --screenshot 4350:interp.png
 ```
 
-The toolkit's [docs/running.md](https://github.com/sp00nznet/neogeorecomp/blob/master/docs/running.md) covers every option and the input-script format. `tests/start_fight.txt` reaches the first round, and `tests/play_long.txt` is the 5-minute soak.
+The toolkit's [docs/running.md](https://github.com/danilopaulinodasilva/neogeorecomp/blob/master/docs/running.md) covers every option and the input-script format. `tests/start_fight.txt` reaches the first round, `tests/play_long.txt` is the 5-minute soak, and `tests/modes/` has one script per game mode, with both players fighting.
 
 ## Building from source
 

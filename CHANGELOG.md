@@ -5,6 +5,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 ## [Unreleased]
 
 ### Added
+- Player 2 and gamepads (from neogeorecomp).
+- `tests/modes/`: one script per mode (team play, team VS, single play, single VS, survivor, practice), from the title screen into a fight where both players attack and do special moves; the profile pass plays each, at 320 and 400 wide. `tools/mode_scripts.py` writes them.
 - Sound, from neogeorecomp's YM2610 synthesis: music, voices and effects.
 - The King of Fighters '98 (MAME set `kof98h`, the AES cart) on neogeorecomp: AES boot, intro, attract demos and team matches, running on recompiled 68000 code. It needs neogeorecomp's multi-bank P ROM support and AES mode.
 - Widescreen (`--widescreen`): fights draw the stage 400 pixels wide, by patching the background column ranges and the camera range at load time; the profile pass also plays the soak in widescreen. Menus and other backgrounds continue into the margins, mirrored, repeated or in their edge colour (`ng_game_t.extend`), the character select in its edge colour, letterbox bars while they are plain bands, and the stone behind the menus and the title from new margin art in `assets/`.

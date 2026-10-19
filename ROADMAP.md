@@ -2,8 +2,8 @@
 
 ## Next
 
-- **Player 2 keys, gamepad input** and remappable keys (toolkit frontend).
-- **Script more modes** (versus, survivor, practice, the boss fight) into the soak and the profile, so their runtime-only code runs natively and `--verify` covers them.
+- **The boss fight** in the profile: reaching it means a script that wins every match against the CPU.
+- **Remappable keys and buttons**, with the launcher.
 - **Widescreen outside fights**: the intro's text collages and illustrations narrower than the screen still have black margins; decide what they show, possibly with more art in `assets/`.
 
 ## Launcher and video options

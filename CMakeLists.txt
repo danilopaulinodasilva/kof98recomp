@@ -69,6 +69,30 @@ if(KOF98_ROM_DIR)
                 --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/play_long.txt --dump-misses ${KOF98_ENTRIES}
         COMMAND kof98 --headless --widescreen --rom-path ${KOF98_ROM_DIR} --frames 19000
                 --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/play_long.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/team_play.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --widescreen --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/team_play.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/team_vs.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --widescreen --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/team_vs.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/single_play.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --widescreen --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/single_play.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/single_vs.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --widescreen --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/single_vs.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/survivor.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --widescreen --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/survivor.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/practice.txt --dump-misses ${KOF98_ENTRIES}
+        COMMAND kof98 --headless --widescreen --rom-path ${KOF98_ROM_DIR} --frames 14000
+                --input ${CMAKE_CURRENT_SOURCE_DIR}/tests/modes/practice.txt --dump-misses ${KOF98_ENTRIES}
         DEPENDS kof98
         COMMENT "Profiling a scripted session for runtime-only entry points")
     target_compile_definitions(kof98 PRIVATE KOF98_HAVE_RECOMP)

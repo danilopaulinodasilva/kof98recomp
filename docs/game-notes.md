@@ -55,8 +55,8 @@ Bringing it up as an AES found a toolkit bug: the AES has no board SFIX or SM1, 
 - The profile pass adds about 530 runtime-only entry points across attract and a play session.
 - At boot the game runs a routine from work RAM, which the static recompiler cannot see. It is about 11.7M interpreted instructions, all during start-up; after that the soak runs natively.
 
-End state, with the profile pass (which plays attract and the soak in widescreen too): 40,775 routines and 57,944 dispatch entries. `--verify` finds 0 mismatches over 12.1M blocks of the soak, and over 11.7M in widescreen.
+End state, with the profile pass (attract, the soak and every mode's script, also in widescreen): 40,801 routines and 57,972 dispatch entries. `--verify` finds 0 mismatches over 12.1M blocks of the soak, and over 11.7M in widescreen.
 
 ## Not yet
 
-- **Coverage**: the soak plays team matches against the CPU with player 1. Other modes (versus, survivor, practice, the boss) have not been scripted yet; any runtime-only code they reach runs in the interpreter until profiled.
+- **Coverage**: the soak plays team matches against the CPU with player 1, and `tests/modes/` covers every mode on the menu with both players. The boss fight is not scripted yet, since reaching it means winning every match; any runtime-only code it reaches runs in the interpreter until profiled.
