@@ -30,7 +30,19 @@ Set-Content -Path $Log -Value "setup started $(Get-Date -Format s)"
 
 function Log([string]$m) { Add-Content -Path $Log -Value $m }
 function Say([string]$m) { Write-Host $m; Log $m }
-function Step([string]$m) { Write-Host ""; Write-Host "== $m" -ForegroundColor Cyan; Log "== $m" }
+# "[n/N] what" lines: recomp-launcher's progress bar reads them.
+$script:StepN = 0
+$StepCount = if ($NoProfile) { 5 } else { 6 }
+function Step([string]$m) {
+    $script:StepN++
+    $line = "[$script:StepN/$StepCount] $m"
+    Write-Host ""; Write-Host $line -ForegroundColor Cyan; Log $line
+}
+# A winget install lands on PATH for new windows only; read it again so
+# setup can carry on instead of asking for a rerun.
+function RefreshPath {
+    $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+}
 function Fail([string]$sentence) {
     Write-Host ""
     Write-Host "Setup stopped: $sentence" -ForegroundColor Red
@@ -69,7 +81,8 @@ if (-not (Has 'git')) {
         Fail 'Git is required; install it from https://git-scm.com and run Setup.cmd again.'
     }
     Winget 'Git.Git' ''
-    Fail 'Git was installed. Close this window and run Setup.cmd again so Windows picks it up.'
+    RefreshPath
+    if (-not (Has 'git')) { Fail 'Git was installed. Close this window and run Setup.cmd again so Windows picks it up.' }
 }
 Say "  git:   $((git --version) -join '')"
 
@@ -83,7 +96,8 @@ if (-not $cmakeOk) {
         Fail 'CMake is required; install it from https://cmake.org and run Setup.cmd again.'
     }
     Winget 'Kitware.CMake' ''
-    Fail 'CMake was installed. Close this window and run Setup.cmd again so Windows picks it up.'
+    RefreshPath
+    if (-not (Has 'cmake')) { Fail 'CMake was installed. Close this window and run Setup.cmd again so Windows picks it up.' }
 }
 Say "  cmake: $(((cmake --version) | Select-Object -First 1))"
 
@@ -252,5 +266,5 @@ try {
 
 Write-Host ""
 Write-Host 'Done. Double-click "KOF98" in this folder to play.' -ForegroundColor Green
-Write-Host 'Keys: arrows move, Z/X/C/V buttons A-D, 1 start (no coin: it runs as an AES), Esc quit. No sound yet.'
+Write-Host 'Keys: arrows move, Z/X/C/V buttons A-D, 1 start (no coin: it runs as an AES), Esc pauses and opens the menu.'
 Log 'setup finished'

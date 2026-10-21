@@ -1,0 +1,14 @@
+# The recomp-launcher installer for this game (Windows, Linux, macOS). It holds
+# no game data: the player picks their own ROM zips and it runs setup on them.
+# Every push to master leaves the installers as artifacts; a v* tag attaches
+# them to that release.
+name: installer
+
+on:
+  push: { branches: [master], tags: ['v*'] }
+  workflow_dispatch:
+permissions: { contents: write }
+jobs:
+  installer:
+    uses: sp00nznet/recomp-launcher/.github/workflows/installer.yml@main
+    with: { name: KOF98-Installer }

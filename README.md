@@ -74,6 +74,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before sending code.
 
 ## Getting started
 
+### Installer (Windows, Linux, macOS)
+
+1. Download **KOF98-Installer** for your system from the latest [release](https://github.com/danilopaulinodasilva/kof98recomp/releases) or, between releases, from the newest run of the [installer workflow](https://github.com/danilopaulinodasilva/kof98recomp/actions/workflows/installer.yml) (signed in to GitHub). On Linux, unpack the `.tar.gz`; on macOS, unzip the app.
+2. Open it, choose the folder holding your **`kof98h.zip`** and **`neogeo.zip`** (MAME sets), and press **Build**. It downloads this repo and runs the same setup as below, installing what's missing, with a progress bar; the full output is under **Show details**.
+3. Press **Play**.
+
+The installer holds no game data and builds from your ROMs on your machine ([recomp-launcher](https://github.com/sp00nznet/recomp-launcher)). It isn't signed: on Windows, SmartScreen asks (**More info**, **Run anyway**); on a Mac, open it once, then **Open Anyway** in System Settings, Privacy & Security.
+
 ### Quick start (Windows)
 
 > The Windows setup was carried over from the toolkit's reference game and hasn't been tried with KOF98 yet. If it trips, the step-by-step commands below work, and an issue saying where it stopped helps.
@@ -85,7 +93,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before sending code.
    It checks for Git, CMake, the Visual Studio C++ build tools and SDL2, and asks before installing anything that's missing (it says what and how big). It finds and checksums your ROMs, recompiles and builds the game (a few minutes), and leaves a **KOF98** launcher in the folder. If something fails, it stops with one sentence on what to do and keeps the details in `setup.log`. Running it again picks up where it stopped.
 4. Double-click **KOF98**.
 
-**On Linux or macOS**, run `./setup.sh` instead, optionally with `--rom-zip PATH --bios-zip PATH`. It does the same steps and offers the `apt` command for anything missing. When it finishes, run `./kof98.sh`.
+**On Linux or macOS**, run `./setup.sh` instead, optionally with `--rom-zip PATH --bios-zip PATH`. It does the same steps and offers to install anything missing with `apt`, or with Homebrew on a Mac (which also needs Xcode's command line tools: `xcode-select --install`). When it finishes, run `./kof98.sh`.
 
 Keys: player 1 **arrows** and **Z X C V** (buttons A B C D), **1** start; player 2 **R F D G** and **A S Q W**, **2** start. Gamepads work too: the first one is player 1, the second player 2.
 
@@ -95,7 +103,7 @@ Keys: player 1 **arrows** and **Z X C V** (buttons A B C D), **1** start; player
 
 These are the commands `Setup.cmd` runs.
 
-**Prerequisites:** Git; CMake 3.21+; a C compiler (Visual Studio 2022 with *Desktop development with C++* on Windows, gcc or clang elsewhere); SDL2 for the window (optional, since headless builds need nothing). On Linux: `sudo apt install git cmake gcc libsdl2-dev`. On macOS: `brew install cmake sdl2`.
+**Prerequisites:** Git; CMake 3.21+; a C and C++ compiler (Visual Studio 2022 with *Desktop development with C++* on Windows, gcc and g++ or clang elsewhere); SDL2 for the window (optional, since headless builds need nothing). On Linux: `sudo apt install git cmake gcc g++ libsdl2-dev`. On macOS: `xcode-select --install`, then `brew install cmake sdl2`.
 
 1. **Clone with the toolkit submodule:**
    ```

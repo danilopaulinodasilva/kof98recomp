@@ -4,6 +4,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-21
+
+Installers for Windows, Linux and macOS. They hold no game data: pick the folder with your own `kof98h.zip` and `neogeo.zip` and they build the game on your machine.
+
+### Added
+- **Installer** (recomp-launcher): `launcher/launcher.json` and the `installer` workflow build KOF98-Installer for Windows, Linux and macOS on every push; a `v*` tag attaches them to the release. It holds no game data: the player picks the folder with their MAME zips and it runs setup on them.
+- CI: builds the interpreter-only player on Ubuntu, Windows and macOS on every push and PR.
+- `setup.sh` installs what's missing with Homebrew on macOS and checks for a C++ compiler (ymfm needs one); both setup scripts print `[n/N]` steps for the installer's progress bar. On Windows, installing Git or CMake no longer stops setup for a rerun.
+
 ## [0.1.0] - 2026-10-19
 
 First release, alpha: source only. Build it with your own `kof98h` and `neogeo` dumps (README).

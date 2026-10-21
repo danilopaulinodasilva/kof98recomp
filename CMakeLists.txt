@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(kof98 VERSION 0.1.0 LANGUAGES C CXX)
+project(kof98 VERSION 0.1.1 LANGUAGES C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)

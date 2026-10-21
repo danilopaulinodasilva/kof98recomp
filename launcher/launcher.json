@@ -1,0 +1,42 @@
+{
+  "title": "KOF98 Recomp",
+  "repo": "danilopaulinodasilva/kof98recomp",
+  "accent": "#d0421b",
+  "note": {
+    "windows": "Pick the folder holding your kof98h.zip and neogeo.zip (MAME sets). The first build takes about 10 minutes and 500 MB. Git, CMake and the Visual Studio Build Tools (about 3 GB) are installed if they are missing; Windows asks for permission.",
+    "darwin": "Pick the folder holding your kof98h.zip and neogeo.zip (MAME sets). The first build takes about 10 minutes. It needs Xcode's command line tools and Homebrew, and installs CMake and SDL2 with Homebrew.",
+    "default": "Pick the folder holding your kof98h.zip and neogeo.zip (MAME sets). The first build takes about 10 minutes. Anything missing (git, cmake, g++, SDL2) is installed with apt, which asks for your password."
+  },
+  "game": {
+    "name": "The King of Fighters '98 ROMs",
+    "files": [
+      "kof98h.zip",
+      "neogeo.zip"
+    ]
+  },
+  "setup": {
+    "windows": [
+      "powershell",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "scripts\\setup.ps1",
+      "-Yes",
+      "-RomZip",
+      "{game}\\kof98h.zip",
+      "-BiosZip",
+      "{game}\\neogeo.zip"
+    ],
+    "default": [
+      "bash",
+      "setup.sh",
+      "--yes",
+      "--rom-zip",
+      "{game}/kof98h.zip",
+      "--bios-zip",
+      "{game}/neogeo.zip"
+    ]
+  },
+  "play": "[Kk][Oo][Ff]98.[cs][mh]*"
+}

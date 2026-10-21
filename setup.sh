@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # setup.sh - the Quick start for Linux/macOS: the same steps as Setup.cmd.
-# Checks prerequisites (and offers the apt command when one is missing),
-# finds and checksums your ROMs, builds, profiles, and writes ./kof98.sh.
+# Checks prerequisites (and offers to install what's missing with apt or
+# Homebrew), finds and checksums your ROMs, builds, profiles, and writes
+# ./kof98.sh.
 # Re-running resumes. Details go to setup.log.
 #
 #   ./setup.sh [--rom-zip kof98h.zip] [--bios-zip neogeo.zip] [--yes] [--no-profile]
@@ -24,7 +25,9 @@ done
 echo "setup started $(date)" > "$LOG"
 
 say() { echo "$*"; echo "$*" >> "$LOG"; }
-step() { echo; echo "== $*"; echo "== $*" >> "$LOG"; }
+# "[n/N] what" lines: recomp-launcher's progress bar reads them.
+STEP=0; STEPS=$((5 + PROFILE))
+step() { STEP=$((STEP + 1)); echo; echo "[$STEP/$STEPS] $*"; echo "[$STEP/$STEPS] $*" >> "$LOG"; }
 fail() { echo; echo "Setup stopped: $*"; echo "Details are in $LOG"; echo "FAILED: $*" >> "$LOG"; exit 1; }
 run() { echo "> $*" >> "$LOG"; "$@" >> "$LOG" 2>&1; }
 ask() {
@@ -33,16 +36,25 @@ ask() {
 }
 
 step "Checking prerequisites"
+if [ "$(uname)" = Darwin ]; then
+    # an app started from Finder (the installer) has no Homebrew on PATH
+    export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+    xcode-select -p >/dev/null 2>&1 || fail "Xcode's command line tools are needed: run xcode-select --install, then run setup again."
+fi
 missing=""
-for tool in git cmake cc unzip; do command -v "$tool" >/dev/null || missing="$missing $tool"; done
+for tool in git cmake cc c++ unzip; do command -v "$tool" >/dev/null || missing="$missing $tool"; done
 pkg-config --exists sdl2 2>/dev/null || missing="$missing sdl2"
 if [ -n "$missing" ]; then
     say "  missing:$missing"
-    if command -v apt-get >/dev/null && ask "Install git cmake gcc unzip libsdl2-dev with apt (sudo, about 200 MB)?"; then
-        run sudo apt-get update && run sudo apt-get install -y git cmake gcc unzip libsdl2-dev pkg-config \
+    if [ "$(uname)" = Darwin ]; then
+        command -v brew >/dev/null || fail "Homebrew is needed to install$missing: see https://brew.sh, then run setup again."
+        ask "Install cmake, sdl2 and pkg-config with Homebrew (about 100 MB)?" || fail "install:$missing (brew install cmake sdl2 pkg-config) and run setup again."
+        run brew install cmake sdl2 pkg-config || fail "Homebrew could not install the prerequisites."
+    elif command -v apt-get >/dev/null && ask "Install git cmake gcc g++ unzip libsdl2-dev with apt (sudo, about 200 MB)?"; then
+        run sudo apt-get update && run sudo apt-get install -y git cmake gcc g++ unzip libsdl2-dev pkg-config \
             || fail "apt could not install the prerequisites."
     else
-        fail "install:$missing (e.g. sudo apt install git cmake gcc unzip libsdl2-dev) and run ./setup.sh again."
+        fail "install:$missing (e.g. sudo apt install git cmake gcc g++ unzip libsdl2-dev) and run ./setup.sh again."
     fi
 fi
 say "  $(cmake --version | head -1)"
@@ -112,4 +124,4 @@ EOF
 chmod +x "$ROOT/kof98.sh"
 echo
 echo "Done. Run ./kof98.sh to play."
-echo "Keys: arrows move, Z/X/C/V buttons A-D, 1 start (no coin: it runs as an AES), Esc quit. No sound yet."
+echo "Keys: arrows move, Z/X/C/V buttons A-D, 1 start (no coin: it runs as an AES), Esc pauses and opens the menu."
