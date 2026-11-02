@@ -60,4 +60,4 @@ End state, with the profile pass (attract, the soak and every mode's script, als
 
 ## Not yet
 
-- **Coverage**: the soak plays team matches against the CPU with player 1, and `tests/modes/` covers every mode on the menu with both players. The boss fight is not in those scripts. Debug (Esc, or `ko` / `stage=8` / `rugal` in an input script) ends the round, picks the next stage and queues Rugal, whose id is `$24` (team 13 in the team table; `$25` is Shingo). Any runtime-only code that fight reaches runs in the interpreter until profiled.
+- **Coverage**: the soak plays team matches against the CPU with player 1, and `tests/modes/` covers every mode on the menu with both players. The boss fight is not in those scripts. Debug (Esc, or `ko` / `stage=8` / `match=7` / `rugal` in an input script) ends the round, picks the next stage, holds a ladder fight or queues Rugal, whose id is `$24` (team 13 in the team table; `$25` is Shingo). Match counts teams already fought in the long at `$2796`: 1-5 stay on a normal team, 6 is one of teams 9-11, and 7 is the boss. Any runtime-only code that fight reaches runs in the interpreter until profiled.

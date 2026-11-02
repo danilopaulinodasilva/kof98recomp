@@ -5,7 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 ## [Unreleased]
 
 ### Added
-- Debug, on the pause menu (Esc, then Debug) and in input scripts. Win round ends the round, Stage picks the next stage (0-8, and 8 is Rugal's), Fight Rugal queues him for the next match. Save slot and Load slot keep one snapshot of the machine; a slot only loads at the width it was saved at.
+- Debug, on the pause menu (Esc, then Debug) and in input scripts. Win round ends the round, Stage picks the next stage (0-8, and 8 is Rugal's), Match jumps to a ladder fight (1-7; 7 is the boss), Fight Rugal queues him for the next match. Save slot and Load slot keep one snapshot of the machine; a slot only loads at the width it was saved at.
 
 ### Fixed
 - Widescreen: a wall-carry such as Rugal's Gigantic Pressure reaches the wall and finishes, instead of running in place. The corner positions (world X 32 and 736) move in with the camera.

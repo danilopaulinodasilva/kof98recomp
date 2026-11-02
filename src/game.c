@@ -303,13 +303,18 @@ static int extend(const uint16_t *vram, int screen_w, ng_extra_sprite_t *out, in
  * into the stage index ($27EA, 0-8) the next time a stage is chosen,
  * then cleared. The CPU's next team is the three bytes at $285F; team
  * 13 in the team table is 0x24 three times and team 12 is 0x25, and
- * 0x24 is the boss (the name list gives 0x25 to Shingo). */
+ * 0x24 is the boss (the name list gives 0x25 to Shingo).
+ * The long at $2796 is one bit per team already fought (bit 12, Shingo,
+ * is not counted). The next opponent is a normal team while that count
+ * is 0 to 4, one of teams 9-11 when it is 5, and team 13 when it is 6.
+ * That is fights 1 to 7. Match holds the count; 0 leaves the ladder. */
 #ifdef KOF98_PLAYER
 #define A5 0x108000
 #define RUGAL 0x24
 
 static int s_stage = -1;   /* -1: leave the game's own choice alone */
 static int s_rugal;
+static int s_match;        /* 0: leave the ladder alone, 1-7: that fight */
 
 static void win_round(int v) {
     (void)v;
@@ -331,14 +336,26 @@ static void stage_set(int v) {
     if (v != 8) s_rugal = 0;
 }
 
+static int match_get(void) { return s_match; }
+
+static void match_set(int v) {
+    if (v < 0) v = 0;
+    if (v > 7) v = 7;
+    s_match = v;
+    if (s_match) s_rugal = 0;
+}
+
 static int rugal_get(void) { return s_rugal; }
 
 static void rugal_set(int v) {
     s_rugal = v ? 1 : 0;
-    if (s_rugal) s_stage = 8;
+    if (s_rugal) { s_stage = 8; s_match = 0; }
 }
 
 static void before_frame(void) {
+    /* Fights 1..7 are "0..6 teams already beaten". Written every frame
+     * so a win in between does not advance the ladder while it is held. */
+    if (s_match > 0) ng_w32(A5 + 0x2796, (1u << (s_match - 1)) - 1u);
     if (s_stage >= 0) ng_w8(A5 + 0x6BF9, (uint8_t)s_stage);
     if (!s_rugal) return;
     ng_w8(A5 + 0x6BF9, 8);
@@ -353,6 +370,8 @@ static void before_frame(void) {
 static void win_round(int v) { (void)v; }
 static int stage_get(void) { return 0; }
 static void stage_set(int v) { (void)v; }
+static int match_get(void) { return 0; }
+static void match_set(int v) { (void)v; }
 static int rugal_get(void) { return 0; }
 static void rugal_set(int v) { (void)v; }
 static void before_frame(void) {}
@@ -361,6 +380,7 @@ static void before_frame(void) {}
 static const ng_debug_item_t k_debug[] = {
     {"Win round", "ko", 0, -1, NULL, win_round},
     {"Stage", "stage", 0, 8, stage_get, stage_set},
+    {"Match", "match", 0, 7, match_get, match_set},
     {"Fight Rugal", "rugal", 0, 1, rugal_get, rugal_set},
     {NULL, NULL, 0, 0, NULL, NULL},
 };
