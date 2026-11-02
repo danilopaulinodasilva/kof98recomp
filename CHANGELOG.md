@@ -4,6 +4,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+### Added
+- Debug, on the pause menu (Esc, then Debug) and in input scripts. Win round ends the round, Stage picks the next stage (0-8, and 8 is Rugal's), Fight Rugal queues him for the next match. Save slot and Load slot keep one snapshot of the machine; a slot only loads at the width it was saved at.
+
+### Fixed
+- Widescreen: a wall-carry such as Rugal's Gigantic Pressure reaches the wall and finishes, instead of running in place. The corner positions (world X 32 and 736) move in with the camera.
+
 ## [0.1.1] - 2026-10-21
 
 Installers for Windows, Linux and macOS. They hold no game data: pick the folder with your own `kof98h.zip` and `neogeo.zip` and they build the game on your machine.

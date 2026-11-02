@@ -45,7 +45,7 @@ KOF98 runs on [neogeorecomp](https://github.com/danilopaulinodasilva/neogeorecom
 - **Banked program ROMs** in the toolkit: KOF98's program is 5 MB, with four 1 MB banks it switches between at runtime. Each bank is recompiled in its own context and dispatched by the bank that is mapped.
 - **AES mode**: the AES cartridge refuses to run on an arcade (MVS) board, so it runs as the home console.
 - **Widescreen**, which the hardware never had:
-  - the game streams stage tiles for a 320-pixel window; patching 42 immediate operands at load time widens it, and narrows the camera range so the view never leaves the stage;
+  - the game streams stage tiles for a 320-pixel window; patching 52 immediate operands at load time widens it, narrows the camera range so the view never leaves the stage, and moves the stage-corner tests in with it;
   - patched operands are read from memory by the recompiled code, so the same build runs at any width and `--verify` checks it;
   - screens drawn at a fixed 320 pixels get their margins filled from copies of their own sprite columns, or from art loaded from disk.
 
@@ -97,7 +97,7 @@ The installer holds no game data and builds from your ROMs on your machine ([rec
 
 Keys: player 1 **arrows** and **Z X C V** (buttons A B C D), **1** start; player 2 **R F D G** and **A S Q W**, **2** start. Gamepads work too: the first one is player 1, the second player 2.
 
-**Esc** pauses and opens the menu: volume, fullscreen, scanlines, 4:3 or 16:9, each player's keys, reset and quit. The settings are kept for the next time. It runs as an AES, so there are no coins: press start on the title screen. Start pauses during a round. For widescreen, run `./kof98.sh --widescreen`.
+**Esc** pauses and opens the menu: volume, fullscreen, scanlines, 4:3 or 16:9, each player's keys, reset and quit. **Debug** on that menu wins the round, picks the next stage (0-8; 8 is Rugal's) or queues Rugal as the next opponent, and saves or loads one snapshot. A snapshot only loads at the width it was saved at. The settings are kept for the next time. It runs as an AES, so there are no coins: press start on the title screen. Start pauses during a round. For widescreen, run `./kof98.sh --widescreen`.
 
 ### Step by step
 

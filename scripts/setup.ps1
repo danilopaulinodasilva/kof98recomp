@@ -67,10 +67,13 @@ function Run([string]$exe, [string[]]$argv) {
 }
 function Has([string]$cmd) { return [bool](Get-Command $cmd -ErrorAction SilentlyContinue) }
 function Winget([string]$id, [string]$extra) {
-    if (-not (Has 'winget')) { Fail "winget is not available; install $id by hand and run Setup.cmd again." }
+    # "winget" (no .exe) resolves to this function: PowerShell matches
+    # commands case-insensitively and functions beat executables, so the
+    # call would recurse and never run winget.exe.
+    if (-not (Has 'winget.exe')) { Fail "winget is not available; install $id by hand and run Setup.cmd again." }
     $argv = @('install', '--id', $id, '-e', '--accept-package-agreements', '--accept-source-agreements')
     if ($extra) { $argv += @('--override', $extra) }
-    if (-not (Run 'winget' $argv)) { Fail "installing $id failed; install it by hand and run Setup.cmd again." }
+    if (-not (Run 'winget.exe' $argv)) { Fail "installing $id failed; install it by hand and run Setup.cmd again." }
 }
 
 # ---- 1. prerequisites ----

@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef KOF98_PLAYER
+#include <neogeorecomp/bus.h>
+#endif
 
 /* Widescreen. Stage backgrounds are layers of 32 sprite columns (a 512
  * pixel ring); the game streams tiles into the columns near the camera
@@ -28,7 +31,13 @@
  * reaches either end. Past the ends the map repeats, and fetching a column
  * left of the stage costs the game frames (it takes the column modulo the
  * map width by repeated subtraction). So the camera stops a rounded
- * margin earlier: the window then never passes the stage. */
+ * margin earlier: the window then never passes the stage.
+ *
+ * A wall-carry (Rugal's Gigantic Pressure) ends when a world position
+ * crosses X 32 or 736, the old camera ends plus the 32-pixel screen
+ * margin, and the same constants stand the opponent on that wall. With
+ * the camera stopped short those positions can never be reached, so the
+ * run holds at the new wall. The corners move in with the camera. */
 #define WIDE_PATCHES(X) \
     /* tile streaming window: set up (two layer kinds), then followed */ \
     X(0x007B58, 0x0010, 1, 0, 1) X(0x007B60, 0x0160, 2, 0, 1) \
@@ -54,7 +63,13 @@
     X(0x0922B0, 0x0000, 1, 0, 1)   X(0x0922B8, 0x01C0, -1, 0, 1) \
     X(0x092656, 0x0000, 1, 0, 1)   X(0x09265E, 0x01C0, -1, 0, 1) \
     X(0x092824, 0x0000, 1, 0, 1)   X(0x09282C, 0x01C0, -1, 0, 1) \
-    X(0x092AE6, 0x0000, 1, 0, 1)   X(0x092AEE, 0x01C0, -1, 0, 1)
+    X(0x092AE6, 0x0000, 1, 0, 1)   X(0x092AEE, 0x01C0, -1, 0, 1) \
+    /* stage corners, world X 32 and 736: the test, then where a carry stands */ \
+    X(0x018098, 0x0020, 1, 0, 1)   X(0x0180A2, 0x02E0, -1, 0, 1) \
+    X(0x025628, 0x0020, 1, 0, 1)   X(0x025636, 0x02E0, -1, 0, 1) \
+    X(0x02571A, 0x0020, 1, 0, 1)   X(0x025728, 0x02E0, -1, 0, 1) \
+    X(0x016B84, 0x0020, 1, 0, 1)   X(0x016B90, 0x02E0, -1, 0, 1) \
+    X(0x016B9A, 0x0020, 1, 0, 1)   X(0x016BA6, 0x02E0, -1, 0, 1)
 
 #define MAX_MARGIN 80
 
@@ -280,6 +295,76 @@ static int extend(const uint16_t *vram, int screen_w, ng_extra_sprite_t *out, in
     return n_out;
 }
 
+/* Debug. The generator links this file too and never runs it, so the
+ * memory writes exist only in the player. Work RAM is based at $100000
+ * and the game keeps its variables at A5 = $108000. Zeroing a life bar
+ * only repaints it: a round ends when bit 1 of $283F is set, which is
+ * what a KO sets after the hit. The stage request at $6BF9 is copied
+ * into the stage index ($27EA, 0-8) the next time a stage is chosen,
+ * then cleared. The CPU's next team is the three bytes at $285F; team
+ * 13 in the team table is 0x24 three times and team 12 is 0x25, and
+ * 0x24 is the boss (the name list gives 0x25 to Shingo). */
+#ifdef KOF98_PLAYER
+#define A5 0x108000
+#define RUGAL 0x24
+
+static int s_stage = -1;   /* -1: leave the game's own choice alone */
+static int s_rugal;
+
+static void win_round(int v) {
+    (void)v;
+    ng_w16(A5 + 0x300 + 0x138, 0);                         /* P2 life */
+    ng_w8(A5 + 0x300 + 0x12D, 2);                          /* KO reaction */
+    ng_w8(A5 + 0x300 + 0xE2, ng_r8(A5 + 0x300 + 0xE2) | 0x08);
+    ng_w8(A5 + 0x283F, ng_r8(A5 + 0x283F) | 0x02);
+}
+
+static int stage_get(void) {
+    int v = s_stage >= 0 ? s_stage : (ng_r8(A5 + 0x27EA) & 0x0F);
+    return v > 8 ? 8 : v;
+}
+
+static void stage_set(int v) {
+    if (v < 0) v = 0;
+    if (v > 8) v = 8;
+    s_stage = v;
+    if (v != 8) s_rugal = 0;
+}
+
+static int rugal_get(void) { return s_rugal; }
+
+static void rugal_set(int v) {
+    s_rugal = v ? 1 : 0;
+    if (s_rugal) s_stage = 8;
+}
+
+static void before_frame(void) {
+    if (s_stage >= 0) ng_w8(A5 + 0x6BF9, (uint8_t)s_stage);
+    if (!s_rugal) return;
+    ng_w8(A5 + 0x6BF9, 8);
+    ng_w8(A5 + 0x285F, RUGAL);
+    ng_w8(A5 + 0x2860, RUGAL);
+    ng_w8(A5 + 0x2861, RUGAL);
+    ng_w8(A5 + 0x27ED, RUGAL);
+    ng_w8(A5 + 0x27EE, RUGAL);
+    ng_w8(A5 + 0x27EF, RUGAL);
+}
+#else
+static void win_round(int v) { (void)v; }
+static int stage_get(void) { return 0; }
+static void stage_set(int v) { (void)v; }
+static int rugal_get(void) { return 0; }
+static void rugal_set(int v) { (void)v; }
+static void before_frame(void) {}
+#endif
+
+static const ng_debug_item_t k_debug[] = {
+    {"Win round", "ko", 0, -1, NULL, win_round},
+    {"Stage", "stage", 0, 8, stage_get, stage_set},
+    {"Fight Rugal", "rugal", 0, 1, rugal_get, rugal_set},
+    {NULL, NULL, 0, 0, NULL, NULL},
+};
+
 /* MAME set "kof98h", the unencrypted AES dump, plus the AES system ROM
  * neo-po.bin from the "neogeo" set. The 1 MB P1 is the fixed
  * $000000 area; the 4 MB P2 holds four banks for $200000. Both are stored
@@ -309,4 +394,6 @@ const ng_game_t k_kof98 = {
     .patch = patch,
     .live_words = k_live_words,
     .extend = extend,
+    .debug = k_debug,
+    .before_frame = before_frame,
 };

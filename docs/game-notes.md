@@ -1,6 +1,6 @@
 # The King of Fighters '98: notes
 
-What this title needs from the toolkit, and what bringing it up showed. These notes cover behaviour. Nothing from the ROM is published, apart from the widescreen patch in `src/game.c`: the addresses of 42 immediate operands and their original values, which it checks before changing them.
+What this title needs from the toolkit, and what bringing it up showed. These notes cover behaviour. Nothing from the ROM is published, apart from the widescreen patch in `src/game.c`: the addresses of 52 immediate operands and their original values, which it checks before changing them.
 
 ## The set
 
@@ -39,6 +39,7 @@ Bringing it up as an AES found a toolkit bug: the AES has no board SFIX or SM1, 
 - The streaming window (352 pixels plus both margins) has to fit the 512-pixel ring, so the patch stops at 80-pixel margins: wider output leaves the outermost pixels black.
 - The window starts at the camera minus 16 without being aligned to a column, which works because the camera starts on one. It grows by whole columns (48 pixels per side at 400 wide); a misaligned window fetched columns 8 pixels off.
 - Stages are 768 pixels wide, and each stage's setup routine (nine of them) sets the camera range to 0..448, where a 320-pixel view reaches either end. Past the ends the map repeats. Worse, a column left of the stage costs the game frames: it takes the column modulo the map width by repeated subtraction, and index -1 is 65,535. So the camera range shrinks by the rounded margin on each side. The stage ends sit 48 pixels further in at 400 wide, and the view always shows stage art.
+- A wall-carry ends when a world position crosses X 32 or 736 (the old camera ends plus the 32-pixel screen margin), and the same constants place the opponent on that wall. Those positions sit past the narrowed camera, so the run reaches the wall and never finishes: Rugal's Gigantic Pressure holds at the edge. The patch moves both corners in by the same rounded margin. In 4:3 the margin is zero and the original constants stay.
 - All nine stages (stage index at `$10A7EA`) were checked with the camera against both ends. A fighter entering between rounds is visible a little earlier.
 - Other screens are drawn for 320 pixels. Their backgrounds are 20 sprite columns at X 0..304, and `ng_game_t.extend` fills the margins with copies of those columns: mirrored at the edge for textures and gradients (the stone menus, the character select, the title logo, intro and story backdrops, the continue screen, the K.O. flash), or repeated every 10 columns for the "K.O.F." lettering behind the character select. When the art's outer column is empty (left for the overscan), the next column in is the edge.
 - The character select's gradient and lettering take their colour from the palette index, which rises from 1 at the outer edge toward the middle. Their copies are drawn in index 1 alone, so the gradient continues from the edge and copied letters keep the edge's colour. Index 1 also fills the 8 pixels the overscan used to hide, which were a lighter stripe at the edge of the picture.
@@ -59,4 +60,4 @@ End state, with the profile pass (attract, the soak and every mode's script, als
 
 ## Not yet
 
-- **Coverage**: the soak plays team matches against the CPU with player 1, and `tests/modes/` covers every mode on the menu with both players. The boss fight is not scripted yet, since reaching it means winning every match; any runtime-only code it reaches runs in the interpreter until profiled.
+- **Coverage**: the soak plays team matches against the CPU with player 1, and `tests/modes/` covers every mode on the menu with both players. The boss fight is not in those scripts. Debug (Esc, or `ko` / `stage=8` / `rugal` in an input script) ends the round, picks the next stage and queues Rugal, whose id is `$24` (team 13 in the team table; `$25` is Shingo). Any runtime-only code that fight reaches runs in the interpreter until profiled.

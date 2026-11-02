@@ -16,6 +16,7 @@ CMakeUserPresets.json
 *.pdb
 *.ilk
 *.log
+*.slot
 
 # ROM files — never commit game data
 *.p1
