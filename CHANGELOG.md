@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-03
+
+### Fixed
+- The installer builds the Debug menu. `toolkit.ref` still named the toolkit from before that menu, so a v0.2.0 install compiled the new game against the old menu. Setup now checks out the pinned toolkit even when a copy is already on disk.
+
 ## [0.2.0] - 2026-11-02
 
 ### Added

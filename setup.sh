@@ -60,15 +60,22 @@ fi
 say "  $(cmake --version | head -1)"
 
 step "Fetching the neogeorecomp toolkit"
-if [ ! -f "$ROOT/neogeorecomp/ext/musashi/m68k_in.c" ]; then
-    if [ -d "$ROOT/.git" ]; then
-        run git -C "$ROOT" submodule update --init --recursive || fail "git could not fetch the toolkit submodule."
-    else
-        ref="$(head -1 "$ROOT/toolkit.ref" | tr -d '\r ')"
-        rm -rf "$ROOT/neogeorecomp"
-        run git clone https://github.com/danilopaulinodasilva/neogeorecomp.git "$ROOT/neogeorecomp" || fail "git could not clone the toolkit."
-        run git -C "$ROOT/neogeorecomp" checkout "$ref" || fail "the toolkit has no commit $ref."
-        run git -C "$ROOT/neogeorecomp" submodule update --init --recursive || fail "git could not fetch the toolkit's submodules."
+if [ -d "$ROOT/.git" ]; then
+    run git -C "$ROOT" submodule update --init --recursive || fail "git could not fetch the toolkit submodule."
+else
+    # A plain download has no submodule. toolkit.ref is the commit, and an
+    # older copy already on disk has to move to it or the pause menu stays old.
+    ref="$(head -1 "$ROOT/toolkit.ref" | tr -d '\r ')"
+    dst="$ROOT/neogeorecomp"
+    if [ ! -d "$dst/.git" ]; then
+        rm -rf "$dst"
+        run git clone https://github.com/danilopaulinodasilva/neogeorecomp.git "$dst" || fail "git could not clone the toolkit."
+    fi
+    have="$(git -C "$dst" rev-parse HEAD 2>/dev/null || true)"
+    if [ "$have" != "$ref" ] || [ ! -f "$dst/ext/musashi/m68k_in.c" ]; then
+        run git -C "$dst" fetch origin || fail "git could not fetch the toolkit."
+        run git -C "$dst" checkout "$ref" || fail "the toolkit has no commit $ref."
+        run git -C "$dst" submodule update --init --recursive || fail "git could not fetch the toolkit's submodules."
     fi
 fi
 say "  toolkit ready"

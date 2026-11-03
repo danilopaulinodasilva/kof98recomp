@@ -139,15 +139,21 @@ if (-not (Has 'ffmpeg')) { Say '  ffmpeg: not found (only needed for --record)' 
 
 # ---- 2. the toolkit ----
 Step 'Fetching the neogeorecomp toolkit'
-if (-not (Test-Path (Join-Path $Root 'neogeorecomp\ext\musashi\m68k_in.c'))) {
-    if (Test-Path (Join-Path $Root '.git')) {
-        if (-not (Run 'git' @('-C', $Root, 'submodule', 'update', '--init', '--recursive'))) { Fail 'git could not fetch the toolkit submodule; check your connection.' }
-    } else {
-        # A plain download (no .git): clone the toolkit at the pinned commit.
-        $ref = (Get-Content (Join-Path $Root 'toolkit.ref') -ErrorAction Stop | Select-Object -First 1).Trim()
-        $dst = Join-Path $Root 'neogeorecomp'
+if (Test-Path (Join-Path $Root '.git')) {
+    if (-not (Run 'git' @('-C', $Root, 'submodule', 'update', '--init', '--recursive'))) { Fail 'git could not fetch the toolkit submodule; check your connection.' }
+} else {
+    # A plain download has no submodule. toolkit.ref is the commit, and an
+    # older copy already on disk has to move to it or the pause menu stays old.
+    $ref = (Get-Content (Join-Path $Root 'toolkit.ref') -ErrorAction Stop | Select-Object -First 1).Trim()
+    $dst = Join-Path $Root 'neogeorecomp'
+    if (-not (Test-Path (Join-Path $dst '.git'))) {
         if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
         if (-not (Run 'git' @('clone', 'https://github.com/danilopaulinodasilva/neogeorecomp.git', $dst))) { Fail 'git could not clone the toolkit; check your connection.' }
+    }
+    $have = ''
+    if (Test-Path (Join-Path $dst '.git')) { $have = (& git -C $dst rev-parse HEAD 2>$null) }
+    if ($have -ne $ref -or -not (Test-Path (Join-Path $dst 'ext\musashi\m68k_in.c'))) {
+        if (-not (Run 'git' @('-C', $dst, 'fetch', 'origin'))) { Fail 'git could not fetch the toolkit; check your connection.' }
         if (-not (Run 'git' @('-C', $dst, 'checkout', $ref))) { Fail "the toolkit has no commit $ref; download a newer copy of this repo." }
         if (-not (Run 'git' @('-C', $dst, 'submodule', 'update', '--init', '--recursive'))) { Fail 'git could not fetch the toolkit''s submodules.' }
     }
